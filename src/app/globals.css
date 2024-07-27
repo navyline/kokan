@@ -31,3 +31,29 @@ body {
     text-wrap: balance;
   }
 }
+
+/* globals.css */
+
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+nav a {
+  text-decoration: none;
+  color: white;
+}
+
+nav a:hover {
+  text-decoration: underline;
+}
+
+button {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+button:hover {
+  text-decoration: underline;
+}

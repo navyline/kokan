@@ -20,9 +20,14 @@ export default function Navbar() {
 
         {/* Desktop Menu */}
         <div className="hidden md:flex space-x-8">
-          <Link href="/explore" className="text-lg text-gray-700 hover:text-gray-500">
-            Explore
-          </Link>
+          <div className="flex-1 flex justify-center space-x-8">
+            <Link href="/explore" className="text-lg text-gray-700 hover:text-gray-500">
+              Explore
+            </Link>
+            <Link href="/about" className="text-lg text-gray-700 hover:text-gray-500">
+              About
+            </Link>
+          </div>
           {user && (
             <Link href="/posts/new" className="text-lg text-gray-700 hover:text-gray-500">
               Post
@@ -117,6 +122,9 @@ export default function Navbar() {
         <div className="md:hidden mt-2 px-4 py-4 space-y-2 bg-white border-t border-gray-300">
           <Link href="/explore" className="block text-gray-700 hover:text-gray-500">
             Explore
+          </Link>
+          <Link href="/about" className="block text-gray-700 hover:text-gray-500">
+            About
           </Link>
           {user && (
             <Link href="/posts/new" className="block text-gray-700 hover:text-gray-500">

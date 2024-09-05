@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 
 const conditions = [
-  { label: 'New', description: 'Unused, sealed, and in the original packaging or with the original tag.' },
-  { label: 'Like new', description: 'Lightly used and fully functional, but does not include the original packaging or tags.' },
-  { label: 'Good', description: 'Gently used and may have minor cosmetic flaws, but is fully functional.' },
-  { label: 'Fair', description: 'Used and has multiple cosmetic flaws, but overall functional.' },
+  { label: 'ใหม่', description: 'ไม่เคยใช้งาน ปิดผนึก และอยู่ในบรรจุภัณฑ์เดิม' },
+  { label: 'เหมือนใหม่', description: 'ใช้งานเล็กน้อยและใช้งานได้เต็มประสิทธิภาพ แต่ไม่รวมบรรจุภัณฑ์หรือแท็กเดิม' },
+  { label: 'สภาพดี', description: 'ใช้มาบ้างเล็กน้อยและอาจมีตำหนิเล็กน้อย แต่ใช้งานได้อย่างเต็มประสิทธิภาพ' },
+  { label: 'ปานกลาง', description: 'ใช้มาแล้วและมีตำหนิหลายจุด แต่โดยรวมยังใช้งานได้' },
 ];
 
 const ConditionSelector = ({ onSelectCondition }) => {

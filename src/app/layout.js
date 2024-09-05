@@ -1,8 +1,9 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
-import Footer from '@/components/Footer.jsx';
+import Navbar from "../components/Navbar";
+import Footer from '../components/Footer.jsx';
 import { UserProvider } from '@auth0/nextjs-auth0/client';
+import { EdgeStoreProvider } from '../../lib/edgestore';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,9 +17,11 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={inter.className}>
         <UserProvider>
+        <EdgeStoreProvider>
           <Navbar />
           {children}
           <Footer />
+          </EdgeStoreProvider>
         </UserProvider>
       </body>
     </html>

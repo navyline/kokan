@@ -1,68 +1,59 @@
-"use client"
-import { useState } from 'react';
+'use client';
+
+import * as React from 'react';
+import { useEdgeStore } from '../../../../lib/edgestore';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@auth0/nextjs-auth0/client';
-import ConditionSelector from '@/components/ConditionSelector';
-import CategorySelector from '@/components/CategorySelector';
+import ConditionSelector from '../../../components/ConditionSelector';
+import CategorySelector from '../../../components/CategorySelector';
 
 export default function NewPost() {
   const { user } = useUser();
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [condition, setCondition] = useState('');
-  const [category, setCategory] = useState('');
-  const [images, setImages] = useState([]);
+  const [title, setTitle] = React.useState('');
+  const [description, setDescription] = React.useState('');
+  const [condition, setCondition] = React.useState('');
+  const [category, setCategory] = React.useState('');
+  const [images, setImages] = React.useState([]);
+  const { edgestore } = useEdgeStore();
   const router = useRouter();
 
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
-    const formData = new FormData();
-    files.forEach((file) => {
-      formData.append('images', file);
-    });
-
-    const res = await fetch('/api/posts/upload', {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (!res.ok) {
-      console.error('Failed to upload images');
-      return;
+    const uploadedImages = [];
+    for (const file of files) {
+      try {
+        const response = await edgestore.publicFiles.upload({
+          file,
+          onProgressChange: (progress) => {
+            console.log(progress);
+          },
+        });
+        uploadedImages.push(response.url); // Assuming the response contains the URL of the uploaded image
+      } catch (error) {
+        console.error('Failed to upload image:', error);
+      }
     }
-
-    try {
-      const data = await res.json();
-      setImages(data.files);
-    } catch (error) {
-      console.error('Failed to parse response JSON:', error);
-    }
+    setImages((prevImages) => [...prevImages, ...uploadedImages]);
   };
 
   const handleDrop = async (e) => {
     e.preventDefault();
     const files = Array.from(e.dataTransfer.files);
-    const formData = new FormData();
-    files.forEach((file) => {
-      formData.append('images', file);
-    });
-
-    const res = await fetch('/api/posts/upload', {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (!res.ok) {
-      console.error('Failed to upload images');
-      return;
+    const uploadedImages = [];
+    for (const file of files) {
+      try {
+        const response = await edgestore.publicFiles.upload({
+          file,
+          onProgressChange: (progress) => {
+            console.log(progress);
+          },
+        });
+        uploadedImages.push(response.url); // Assuming the response contains the URL of the uploaded image
+      } catch (error) {
+        console.error('Failed to upload image:', error);
+      }
     }
-
-    try {
-      const data = await res.json();
-      setImages(data.files);
-    } catch (error) {
-      console.error('Failed to parse response JSON:', error);
-    }
+    setImages((prevImages) => [...prevImages, ...uploadedImages]);
   };
 
   const handleSubmit = async (e) => {
@@ -72,10 +63,10 @@ export default function NewPost() {
       description,
       condition,
       category,
-      images,
-      owner: user.sub, // รวม owner จากผู้ใช้ที่ล็อกอินอยู่
+      imageUrls: images,
+      owner: user.sub,
+      ownerName: user.name,
     };
-
     const res = await fetch('/api/posts', {
       method: 'POST',
       headers: {
@@ -83,7 +74,6 @@ export default function NewPost() {
       },
       body: JSON.stringify(postData),
     });
-
     if (res.ok) {
       router.push('/profile');
     } else {
@@ -153,28 +143,18 @@ export default function NewPost() {
             ))}
             <label
               htmlFor="image-upload"
-              className="w-24 h-24 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-md cursor-pointer"
+              className="w-24 h-24 flex items-center justify-center border border-gray-300 rounded-md cursor-pointer"
             >
               <span className="text-gray-500">+</span>
             </label>
           </div>
         </div>
-        {/* Buttons */}
-        <div className="flex justify-end space-x-4">
-          <button
-            type="button"
-            onClick={() => router.push('/profile')}
-            className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-          >
-            Post
-          </button>
-        </div>
+        <button
+          type="submit"
+          className="bg-blue-500 text-white p-2 rounded"
+        >
+          Create Post
+        </button>
       </form>
     </div>
   );

@@ -1,36 +1,51 @@
+"use client"
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 const ExplorePage = () => {
+  const [posts, setPosts] = useState([]);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const response = await fetch('/api/posts'); // Adjust the API endpoint as needed
+        const data = await response.json();
+        setPosts(data.posts || []);
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+        setPosts([]); // Ensure posts is always an array
+      }
+    };
+
+    fetchPosts();
+  }, []);
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Explore</h1>
-      
-      {/* Search and Filter Section */}
-      <div className="mb-6">
-        <input
-          type="text"
-          placeholder="Search..."
-          className="w-full p-3 border border-gray-300 rounded-md"
-        />
-      </div>
-
+      <h1 className="text-2xl font-bold mb-4">Explore</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Sample Item Card */}
-        <div className="bg-white shadow-md rounded-md overflow-hidden">
-          <img
-            src="/path/to/image.jpg"
-            alt="Item Image"
-            className="w-full h-48 object-cover"
-          />
-          <div className="p-4">
-            <h2 className="text-xl font-semibold">Item Title</h2>
-            <p className="text-gray-700 mt-2">Short description of the item.</p>
-            <p className="text-gray-500 mt-2">Location: City</p>
-            <Link href="/item/1" className="text-blue-500 hover:underline">
-              View Details
-            </Link>
-          </div>
-        </div>
+        {posts.length > 0 ? (
+          posts.map((post) => (
+            <div key={post.id} className="bg-white shadow-md rounded-md overflow-hidden">
+              <img
+                src={post.image || '/path/to/default-image.jpg'}
+                alt={post.title}
+                className="w-full h-48 object-cover"
+              />
+              <div className="p-4">
+                <h2 className="text-xl font-semibold">{post.title}</h2>
+                <p className="text-gray-700 mt-2">{post.description}</p>
+                <p className="text-gray-500 mt-2">Location: {post.location}</p>
+                <Link href={`/item/${post.id}`} className="text-blue-500 hover:underline">
+                  View Details
+                </Link>
+              </div>
+            </div>
+          ))
+        ) : (
+          <p>No posts available</p>
+        )}
       </div>
     </div>
   );

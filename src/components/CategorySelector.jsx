@@ -81,9 +81,7 @@ const CategorySelector = ({ onSelectCategory }) => {
       ]
     },
     { label: 'Tools', subcategories: [] },
-    {
-      label: 'Toys', subcategories: []
-    },
+    { label: 'Toys', subcategories: [] },
     {
       label: 'Video Games', subcategories: [
         'Nintendo', 'Playstation', 'Xbox', 'PC'

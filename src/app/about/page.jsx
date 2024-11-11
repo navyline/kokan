@@ -49,7 +49,7 @@ export default function AboutPage() {
   ];
 
   return (
-    <main className="container mx-auto px-4 py-8">
+    <main className="container mx-auto px-3 py-8 bg-teal-100">
       {sections.map((section, index) => (
         <section
           key={index}

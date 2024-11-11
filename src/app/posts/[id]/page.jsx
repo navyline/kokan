@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation'; // Correct import for App Router
+import { useParams } from 'next/navigation'; // ใช้ useParams แทน useRouter
 import Image from 'next/image';
 
 const PostDetail = () => {
-  const { id } = useParams(); // Use useParams to get the route parameters
+  const { id } = useParams(); // ดึง id จาก URL
   const [post, setPost] = useState(null);
 
   useEffect(() => {
@@ -24,6 +24,10 @@ const PostDetail = () => {
     }
   }, [id]);
 
+  if (!id) {
+    return <div>Error: Invalid Post ID</div>; // ถ้า id ไม่มีค่าจะแสดงข้อความนี้
+  }
+
   if (!post) {
     return <div>Loading...</div>;
   }
@@ -31,8 +35,10 @@ const PostDetail = () => {
   return (
     <div>
       <h1>{post.title}</h1>
-      <Image src={post.image} alt={post.title} width={600} height={400} />
-      <p>{post.content}</p>
+      {post.imageUrls && post.imageUrls.length > 0 && (
+        <Image src={post.imageUrls[0]} alt={post.title} width={600} height={400} />
+      )}
+      <p>{post.description}</p>
     </div>
   );
 };

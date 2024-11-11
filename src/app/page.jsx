@@ -14,9 +14,9 @@ export default function HomePage() {
 
   return (
     <>
-      <div className="bg-yellow-100">
+      <div className="bg-light">
       <main className="container mx-auto px-4 py-8">
-      <section className="text-center mb-8 bg-cover bg-center py-20" style={{ backgroundImage: "url('/img/handshake.jpg')" }}>
+      <section className="text-center mb-10 bg-cover bg-center py-20" style={{ backgroundImage: "url('/img/handshake.jpg')" }}>
   <div className="bg-white bg-opacity-50 p-8 rounded-md w-100 mx-auto">
     <h1 className="text-4xl font-bold mb-4 text-indigo-600">เริ่มต้นแลกเปลี่ยนได้แล้ววันนี้</h1>
     <p className="text-lg mb-6 text-gray-700">
@@ -44,10 +44,10 @@ export default function HomePage() {
 </section>
 </section>
 
-        <section className="mb-8">
-          <div className='flex justify-between items-center mb-4'>
-          <h2 className="text-3xl font-bold mb-4">Popular categories</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+<section className="mb-8">
+  <div className='flex flex-col items-center mb-4'>
+    <h2 className="text-4xl font-bold text-center mb-4">Popular Categories</h2>
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {displayedCategories.map(category => (
               <Link key={category} href={`/category/${category.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`} className="block bg-gray-100 p-4 rounded-md text-center hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 shadow-md transition duration-300 ease-in-out transform hover:scale-105">
                 {category}

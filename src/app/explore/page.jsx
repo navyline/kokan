@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -11,7 +11,7 @@ const ExplorePage = () => {
       try {
         const response = await fetch('/api/posts'); // Adjust the API endpoint as needed
         const data = await response.json();
-        setPosts(data.posts || []);
+        setPosts(data.posts || []); // Ensure posts is always an array
       } catch (error) {
         console.error('Error fetching posts:', error);
         setPosts([]); // Ensure posts is always an array
@@ -27,20 +27,12 @@ const ExplorePage = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {posts.length > 0 ? (
           posts.map((post) => (
-            <div key={post.id} className="bg-white shadow-md rounded-md overflow-hidden">
-              <img
-                src={post.image || '/path/to/default-image.jpg'}
-                alt={post.title}
-                className="w-full h-48 object-cover"
-              />
-              <div className="p-4">
-                <h2 className="text-xl font-semibold">{post.title}</h2>
-                <p className="text-gray-700 mt-2">{post.description}</p>
-                <p className="text-gray-500 mt-2">Location: {post.location}</p>
-                <Link href={`/item/${post.id}`} className="text-blue-500 hover:underline">
-                  View Details
-                </Link>
-              </div>
+            <div key={post._id} className="bg-white p-4 rounded-lg shadow-md">
+              <h2 className="text-xl font-semibold mb-2">{post.title}</h2>
+              <p className="text-gray-700 mb-4">{post.description}</p>
+              <Link href={`/posts/${post._id}`}>
+                <a className="text-blue-500 hover:underline">Read more</a>
+              </Link>
             </div>
           ))
         ) : (

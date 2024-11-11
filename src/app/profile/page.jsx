@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
 import { useUser } from '@auth0/nextjs-auth0/client';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import PostCard from '../../components/PostCard'; // Import the PostCard component
-import { FaUserCircle, FaPlus, FaFileAlt, FaStar, FaHeart, FaCommentDots } from 'react-icons/fa'; // Import icons
+import PostCard from '../../components/PostCard';
+import { FaUserCircle, FaPlus, FaFileAlt, FaStar, FaHeart, FaCommentDots } from 'react-icons/fa';
 
 export default function Profile() {
   const { user, isLoading } = useUser();
@@ -19,15 +19,20 @@ export default function Profile() {
           console.error('User or user.sub is undefined');
           return;
         }
-        console.log('Fetching posts for user:', user.sub);
-        const response = await fetch('/api/posts'); // Adjust the API endpoint as needed
+        
+        const response = await fetch(`/api/posts?owner=${user.sub}`);
         const data = await response.json();
-        const filteredPosts = data.filter(post => post.owner === user.sub);
-        setUserPosts(filteredPosts);
+
+        if (response.ok) {
+          setUserPosts(data);
+        } else {
+          console.error('Failed to fetch posts:', data.message || 'Unknown error');
+        }
       } catch (error) {
         console.error('Error fetching user posts:', error);
       }
     };
+
     if (user) {
       fetchUserPosts();
     }
@@ -50,10 +55,9 @@ export default function Profile() {
 
   return (
     <div className="bg-gray-100 container mx-auto px-4 py-8">
-      {/* Profile Header */}
       <div className="bg-teal-200 py-12 relative">
         <div className="absolute top-0 left-0 right-0 bottom-0 bg-teal-200"></div>
-        <div className="relative z-10 flex flex-col items-center justify-center"> {/* Flexbox to center content */}
+        <div className="relative z-10 flex flex-col items-center justify-center">
           <div className="w-full flex justify-center">
             <Image
               src={user.picture || '/default-profile.png'}
@@ -68,17 +72,12 @@ export default function Profile() {
             <p><FaUserCircle className="inline mr-1" /> @{user.nickname}</p>
             <p>Interests: {user.interests || 'N/A'}</p>
           </div>
-          <div className="flex justify-center space-x-4 mt-4">
-            <p className="text-gray-600">0 trades</p>
-            <p className="text-gray-600">0 followers</p>
-            <p className="text-gray-600">0 following</p>
-          </div>
         </div>
       </div>
 
       {/* Tab Navigation */}
       <div className="flex justify-center space-x-4 my-6">
-        {[
+        {[ 
           { tab: 'Posts', icon: <FaFileAlt /> },
           { tab: 'ISOs', icon: <FaCommentDots /> },
           { tab: 'Liked', icon: <FaHeart /> },
@@ -104,7 +103,9 @@ export default function Profile() {
             {userPosts.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {userPosts.map((post) => (
-                  <PostCard key={post.id} post={post} />
+                  <Link key={post._id} href={`/posts/${post._id}`}>
+                    <PostCard post={post} />
+                  </Link>
                 ))}
               </div>
             ) : (
@@ -122,10 +123,6 @@ export default function Profile() {
             )}
           </div>
         )}
-
-        {activeTab === 'ISOs' && <p>ISOs content here...</p>}
-        {activeTab === 'Liked' && <p>Liked content here...</p>}
-        {activeTab === 'Reviews' && <p>Reviews content here...</p>}
       </div>
     </div>
   );

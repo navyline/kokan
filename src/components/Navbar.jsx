@@ -10,8 +10,10 @@ export default function Navbar() {
   const { user, isLoading } = useUser();
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const userProfileLink = user ? `/profile/${user.username || user.sub}` : "/api/auth/login";
+
   return (
-    <nav className="bg-white shadow-md py-4">
+    <nav className="bg-white shadow-md py-4 fixed w-full top-0 left-0 z-50">
       <div className="container mx-auto flex justify-between items-center px-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <Link href="/" className="text-3xl font-bold text-gray-900 hover:text-gray-700">
@@ -61,7 +63,7 @@ export default function Navbar() {
                   <Menu.Item>
                     {({ active }) => (
                       <Link
-                        href="/profile"
+                        href={userProfileLink}
                         className={`block px-4 py-2 text-sm text-gray-800 ${active ? 'bg-gray-100' : ''}`}
                       >
                         Profile
@@ -133,7 +135,7 @@ export default function Navbar() {
           )}
           {user ? (
             <>
-              <Link href="/profile" className="block text-gray-700 hover:text-gray-500">
+              <Link href={userProfileLink} className="block text-gray-700 hover:text-gray-500">
                 Profile
               </Link>
               <a

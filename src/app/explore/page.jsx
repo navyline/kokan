@@ -1,20 +1,22 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import React, { useEffect, useState } from 'react';
+import PostCard from '../../components/PostCard'; // นำเข้า PostCard
+import { useRouter } from 'next/navigation';
 
-const ExplorePage = () => {
+const Explore = () => {
   const [posts, setPosts] = useState([]);
+  const router = useRouter();
 
+  // ฟังก์ชั่นดึงข้อมูลโพสต์ทั้งหมดจาก API
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await fetch('/api/posts'); // Adjust the API endpoint as needed
+        const response = await fetch('/api/posts'); // สมมติว่า API นี้จะคืนข้อมูลโพสต์ทั้งหมด
         const data = await response.json();
-        setPosts(data.posts || []); // Ensure posts is always an array
+        setPosts(data); // เก็บข้อมูลโพสต์ลงใน state
       } catch (error) {
         console.error('Error fetching posts:', error);
-        setPosts([]); // Ensure posts is always an array
       }
     };
 
@@ -22,25 +24,22 @@ const ExplorePage = () => {
   }, []);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-4">Explore</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="container mx-auto p-8 max-w-screen-xl">
+      <h1 className="text-3xl font-bold mb-6 text-gray-800">Explore All Posts</h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {/* แสดง PostCard สำหรับแต่ละโพสต์ */}
         {posts.length > 0 ? (
           posts.map((post) => (
-            <div key={post._id} className="bg-white p-4 rounded-lg shadow-md">
-              <h2 className="text-xl font-semibold mb-2">{post.title}</h2>
-              <p className="text-gray-700 mb-4">{post.description}</p>
-              <Link href={`/posts/${post._id}`}>
-                <a className="text-blue-500 hover:underline">Read more</a>
-              </Link>
-            </div>
+            <PostCard key={post._id} post={post} />
           ))
         ) : (
-          <p>No posts available</p>
+          <div className="text-center col-span-full">
+            <p>No posts available</p>
+          </div>
         )}
       </div>
     </div>
   );
 };
 
-export default ExplorePage;
+export default Explore;

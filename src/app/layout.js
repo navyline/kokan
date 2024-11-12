@@ -17,10 +17,12 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={inter.className}>
         <UserProvider>
-        <EdgeStoreProvider>
-          <Navbar />
-          {children}
-          <Footer />
+          <EdgeStoreProvider>
+            <Navbar />
+            <main className="pt-20"> {/* เพิ่ม pt-16 เพื่อเว้นระยะจาก navbar */}
+              {children}
+            </main>
+            <Footer />
           </EdgeStoreProvider>
         </UserProvider>
       </body>

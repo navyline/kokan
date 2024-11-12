@@ -4,7 +4,7 @@ import { useUser } from '@auth0/nextjs-auth0/client';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import PostCard from '../../components/PostCard';
+import PostCard from '../../../components/PostCard';
 import { FaUserCircle, FaPlus, FaFileAlt, FaStar, FaHeart, FaCommentDots } from 'react-icons/fa';
 
 export default function Profile() {
@@ -14,17 +14,17 @@ export default function Profile() {
 
   useEffect(() => {
     const fetchUserPosts = async () => {
+      if (!user?.sub) {
+        console.error('User or user.sub is undefined');
+        return;
+      }
+      
       try {
-        if (!user || !user.sub) {
-          console.error('User or user.sub is undefined');
-          return;
-        }
-        
         const response = await fetch(`/api/posts?owner=${user.sub}`);
         const data = await response.json();
 
         if (response.ok) {
-          setUserPosts(data);
+          setUserPosts(data.filter(post => post.owner === user.sub));
         } else {
           console.error('Failed to fetch posts:', data.message || 'Unknown error');
         }
@@ -33,14 +33,10 @@ export default function Profile() {
       }
     };
 
-    if (user) {
-      fetchUserPosts();
-    }
+    if (user) fetchUserPosts();
   }, [user]);
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
+  if (isLoading) return <div>Loading...</div>;
 
   if (!user) {
     return (
@@ -56,17 +52,15 @@ export default function Profile() {
   return (
     <div className="bg-gray-100 container mx-auto px-4 py-8">
       <div className="bg-teal-200 py-12 relative">
-        <div className="absolute top-0 left-0 right-0 bottom-0 bg-teal-200"></div>
-        <div className="relative z-10 flex flex-col items-center justify-center">
-          <div className="w-full flex justify-center">
-            <Image
-              src={user.picture || '/default-profile.png'}
-              alt={user.name}
-              width={120}
-              height={120}
-              className="rounded-full border-4 border-white"
-            />
-          </div>
+        <div className="absolute inset-0 bg-teal-200"></div>
+        <div className="relative z-10 flex flex-col items-center">
+          <Image
+            src={user.picture || '/default-profile.png'}
+            alt={user.name}
+            width={120}
+            height={120}
+            className="rounded-full border-4 border-white"
+          />
           <h1 className="text-2xl font-bold mt-4 text-center">{user.name}</h1>
           <div className="text-gray-600 mt-2 text-center">
             <p><FaUserCircle className="inline mr-1" /> @{user.nickname}</p>
@@ -77,7 +71,7 @@ export default function Profile() {
 
       {/* Tab Navigation */}
       <div className="flex justify-center space-x-4 my-6">
-        {[ 
+        {[
           { tab: 'Posts', icon: <FaFileAlt /> },
           { tab: 'ISOs', icon: <FaCommentDots /> },
           { tab: 'Liked', icon: <FaHeart /> },
@@ -103,9 +97,13 @@ export default function Profile() {
             {userPosts.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {userPosts.map((post) => (
-                  <Link key={post._id} href={`/posts/${post._id}`}>
-                    <PostCard post={post} />
-                  </Link>
+                  post._id ? (
+                    <Link key={post._id} href={`/posts/${post._id}`}>
+                      <PostCard post={post} />
+                    </Link>
+                  ) : (
+                    <p key={Math.random()} className="text-red-500">Error: Post ID is missing</p>
+                  )
                 ))}
               </div>
             ) : (

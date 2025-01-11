@@ -1,0 +1,206 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// -------- ENUMS --------
+enum PostStatus {
+  AVAILABLE      // ยังเปิดให้แลก
+  PENDING_TRADE  // มีการติดต่อขอแลกอยู่
+  TRADED         // แลกไปแล้ว
+  CLOSED         // ปิดประกาศ
+}
+
+enum TradeStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+
+// -------- MODELS --------
+
+// PROFILE
+model Profile {
+  // ใช้ id (UUID) เป็น Primary Key มาตรฐาน
+  id           String     @id @default(uuid())
+  // clerkId เป็นค่า unique สำหรับผูกกับระบบ Clerk
+  clerkId      String     @unique
+
+  firstName    String
+  lastName     String
+  userName     String
+  email        String
+  profileImage String
+
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  // ความสัมพันธ์กับ Post, Favorite
+  posts        Post[]
+  favorites    Favorite[]
+
+  // ความสัมพันธ์กับ Review (เขียนรีวิว / ถูกรีวิว)
+  reviewsWritten  Review[] @relation(name: "ReviewerProfile")
+  reviewsReceived Review[] @relation(name: "RevieweeProfile")
+
+  // Chat: เป็นผู้สร้าง กับ เป็นผู้รับ
+  chatCreator  Chat[] @relation(name: "CreatorProfile")
+  chatReceiver Chat[] @relation(name: "ReceiverProfile")
+
+  // Message: เป็นผู้ส่ง
+  messageSender Message[] @relation(name: "SenderProfile")
+
+  // Trade: เป็นผู้เสนอ(offerBy) และผู้รับข้อเสนอ(offerTo)
+  tradeOfferBy Trade[] @relation(name: "OfferByProfile")
+  tradeOfferTo Trade[] @relation(name: "OfferToProfile")
+
+  // Notification: เป็นผู้รับการแจ้งเตือน
+  notifications Notification[] 
+}
+
+// POST
+model Post {
+  id          String     @id @default(uuid())
+  name        String
+  description String
+  image       String
+  province    String
+  lat         Float
+  lng         Float
+  price       Int
+
+  status      PostStatus @default(AVAILABLE)
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // ใครเป็นเจ้าของโพสต์
+  profileId   String
+  profile     Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  // เก็บ Favorite ที่ผูกกับ Post นี้
+  favorites   Favorite[]
+
+  // ถ้าต้องการใช้ Category จริง ให้เปิดส่วนนี้
+  categoryId  String?
+  category    Category?  @relation(fields: [categoryId], references: [id])
+
+  // ความสัมพันธ์กับ Trade (กรณีเป็น postOffered / postWanted)
+  offeredBy   Trade[] @relation(name: "PostOffered")
+  wantedBy    Trade[] @relation(name: "PostWanted")
+}
+
+// FAVORITE
+model Favorite {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ใครกด Favorite
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  // Favorite โพสต์ไหน
+  postId String
+  post   Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+// CHAT
+model Chat {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+
+  // ผู้สร้างแชท
+  creatorId   String
+  creator     Profile  @relation(fields: [creatorId], references: [id], name: "CreatorProfile")
+
+  // ผู้รับปลายทาง
+  receiverId  String
+  receiver    Profile  @relation(fields: [receiverId], references: [id], name: "ReceiverProfile")
+
+  messages    Message[]
+}
+
+// MESSAGE
+model Message {
+  id         String   @id @default(uuid())
+  content    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now())
+
+  // อยู่ในแชทไหน
+  chatId     String
+  chat       Chat     @relation(fields: [chatId], references: [id])
+
+  // ใครเป็นผู้ส่ง
+  senderId   String
+  sender     Profile  @relation(fields: [senderId], references: [id], name: "SenderProfile")
+}
+
+// TRADE
+model Trade {
+  id         String       @id @default(uuid())
+  status     TradeStatus  @default(PENDING)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @default(now())
+
+  // ใครเป็นผู้เสนอ
+  offerById  String
+  offerBy    Profile  @relation(fields: [offerById], references: [id], name: "OfferByProfile")
+
+  // เสนอแลก Post ไหน
+  postOfferedId String
+  postOffered   Post     @relation(fields: [postOfferedId], references: [id], name: "PostOffered")
+
+  // ใครเป็นผู้รับข้อเสนอ
+  offerToId   String
+  offerTo     Profile  @relation(fields: [offerToId], references: [id], name: "OfferToProfile")
+
+  // Post อีกฝ่ายที่อยากได้ (อาจเป็น null)
+  postWantedId String?
+  postWanted   Post?    @relation(fields: [postWantedId], references: [id], name: "PostWanted")
+}
+
+// REVIEW
+model Review {
+  id         String   @id @default(uuid())
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now())
+
+  // reviewer: ใครเป็นคนเขียนรีวิว
+  reviewerId String
+  reviewer   Profile @relation(fields: [reviewerId], references: [id], name: "ReviewerProfile")
+
+  // reviewee: ใครถูกรีวิว
+  revieweeId String
+  reviewee   Profile @relation(fields: [revieweeId], references: [id], name: "RevieweeProfile")
+}
+
+// CATEGORY
+model Category {
+  id    String @id @default(uuid())
+  name  String @unique
+  posts Post[]
+}
+
+// NOTIFICATION
+model Notification {
+  id        String   @id @default(uuid())
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  receiverId String
+  receiver   Profile @relation(fields: [receiverId], references: [id])
+}

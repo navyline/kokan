@@ -1,9 +1,10 @@
+// app/layout.tsx
+import { ClerkProvider } from "@clerk/nextjs";
+import Navbar from "../../components/Navbar";
 import "./globals.css";
-import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Kokan",
-  description: "Welcome to my Next.js project!",
+export const metadata = {
+  title: "My App with Clerk",
 };
 
 export default function RootLayout({
@@ -14,8 +15,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {/* เช่น ใส่ Navbar หรือ Providers (context, redux ฯลฯ) ตรงนี้ */}
-        {children}
+        <ClerkProvider>
+        <Navbar />
+          {children}
+        </ClerkProvider>
       </body>
     </html>
   );

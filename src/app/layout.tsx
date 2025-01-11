@@ -4,7 +4,7 @@ import Navbar from "../../components/Navbar";
 import "./globals.css";
 
 export const metadata = {
-  title: "My App with Clerk",
+  title: "Kokan",
 };
 
 export default function RootLayout({

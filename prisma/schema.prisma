@@ -33,37 +33,44 @@ model Profile {
   // clerkId เป็นค่า unique สำหรับผูกกับระบบ Clerk
   clerkId      String     @unique
 
+  // firstName และ lastName เป็นฟิลด์ที่ไม่ควรเป็น null
   firstName    String
   lastName     String
-  userName     String
-  email        String
-  profileImage String
 
+  // userName และ email อาจเป็น optional ได้
+  userName     String? // เปลี่ยนเป็น optional
+  email        String? // เปลี่ยนเป็น optional
+
+  // profileImage เป็นฟิลด์สำหรับรูปโปรไฟล์
+  profileImage String?
+
+  // วันที่สร้างและแก้ไข
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
   // ความสัมพันธ์กับ Post, Favorite
-  posts        Post[]
-  favorites    Favorite[]
+  posts        Post[] // เจ้าของโพสต์
+  favorites    Favorite[] // รายการโปรดที่ถูกกด
 
   // ความสัมพันธ์กับ Review (เขียนรีวิว / ถูกรีวิว)
-  reviewsWritten  Review[] @relation(name: "ReviewerProfile")
-  reviewsReceived Review[] @relation(name: "RevieweeProfile")
+  reviewsWritten  Review[] @relation(name: "ReviewerProfile") // เขียนรีวิว
+  reviewsReceived Review[] @relation(name: "RevieweeProfile") // ถูกรีวิว
 
   // Chat: เป็นผู้สร้าง กับ เป็นผู้รับ
-  chatCreator  Chat[] @relation(name: "CreatorProfile")
-  chatReceiver Chat[] @relation(name: "ReceiverProfile")
+  chatCreator  Chat[] @relation(name: "CreatorProfile") // ผู้สร้างแชท
+  chatReceiver Chat[] @relation(name: "ReceiverProfile") // ผู้รับแชท
 
-  // Message: เป็นผู้ส่ง
+  // Message: เป็นผู้ส่งข้อความ
   messageSender Message[] @relation(name: "SenderProfile")
 
-  // Trade: เป็นผู้เสนอ(offerBy) และผู้รับข้อเสนอ(offerTo)
-  tradeOfferBy Trade[] @relation(name: "OfferByProfile")
-  tradeOfferTo Trade[] @relation(name: "OfferToProfile")
+  // Trade: เป็นผู้เสนอ (offerBy) และผู้รับข้อเสนอ (offerTo)
+  tradeOfferBy Trade[] @relation(name: "OfferByProfile") // ผู้เสนอ
+  tradeOfferTo Trade[] @relation(name: "OfferToProfile") // ผู้รับข้อเสนอ
 
   // Notification: เป็นผู้รับการแจ้งเตือน
   notifications Notification[] 
 }
+
 
 // POST
 model Post {

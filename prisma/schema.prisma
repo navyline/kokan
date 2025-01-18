@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Profile {
+  id              String         @id @default(uuid())
+  clerkId         String         @unique
+  firstName       String
+  lastName        String
+  userName        String?
+  email           String?
+  profileImage    String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  chatCreator     Chat[]         @relation("CreatorProfile")
+  chatReceiver    Chat[]         @relation("ReceiverProfile")
+  favorites       Favorite[]
+  messageSender   Message[]      @relation("SenderProfile")
+  notifications   Notification[]
+  posts           Post[]
+  reviewsReceived Review[]       @relation("RevieweeProfile")
+  reviewsWritten  Review[]       @relation("ReviewerProfile")
+  tradeOfferBy    Trade[]        @relation("OfferByProfile")
+  tradeOfferTo    Trade[]        @relation("OfferToProfile")
+}
+
+model Post {
+  id          String     @id @default(uuid())
+  name        String
+  description String
+  image       String?
+  province    String
+  lat         Float?
+  lng         Float?
+  price       Int
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  profileId   String
+  categoryId  String?
+  status      PostStatus @default(AVAILABLE)
+  views       Int        @default(0)
+  favorites   Favorite[]
+  category    Category?  @relation(fields: [categoryId], references: [id])
+  profile     Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  offeredBy   Trade[]    @relation("PostOffered")
+  wantedBy    Trade[]    @relation("PostWanted")
+}
+
+model Favorite {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  profileId String
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model Chat {
+  id         String    @id @default(uuid())
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @default(now())
+  creatorId  String
+  receiverId String
+  creator    Profile   @relation("CreatorProfile", fields: [creatorId], references: [id])
+  receiver   Profile   @relation("ReceiverProfile", fields: [receiverId], references: [id])
+  messages   Message[]
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  chatId    String
+  senderId  String
+  chat      Chat     @relation(fields: [chatId], references: [id])
+  sender    Profile  @relation("SenderProfile", fields: [senderId], references: [id])
+}
+
+model Trade {
+  id            String      @id @default(uuid())
+  status        TradeStatus @default(PENDING)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @default(now())
+  offerById     String
+  postOfferedId String
+  offerToId     String
+  postWantedId  String?
+  offerBy       Profile     @relation("OfferByProfile", fields: [offerById], references: [id])
+  offerTo       Profile     @relation("OfferToProfile", fields: [offerToId], references: [id])
+  postOffered   Post        @relation("PostOffered", fields: [postOfferedId], references: [id])
+  postWanted    Post?       @relation("PostWanted", fields: [postWantedId], references: [id])
+}
+
+model Review {
+  id         String   @id @default(uuid())
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now())
+  reviewerId String
+  revieweeId String
+  reviewee   Profile  @relation("RevieweeProfile", fields: [revieweeId], references: [id])
+  reviewer   Profile  @relation("ReviewerProfile", fields: [reviewerId], references: [id])
+}
+
+model Category {
+  id    String @id @default(uuid())
+  name  String @unique
+  posts Post[]
+}
+
+model Notification {
+  id         String   @id @default(uuid())
+  message    String
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now())
+  receiverId String
+  receiver   Profile  @relation(fields: [receiverId], references: [id])
+}
+
+enum PostStatus {
+  AVAILABLE
+  PENDING_TRADE
+  TRADED
+  CLOSED
+}
+
+enum TradeStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}

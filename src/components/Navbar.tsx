@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useTheme } from "next-themes";
 import { useUser, SignInButton, SignOutButton, SignUpButton } from "@clerk/nextjs";
 import { Bell, Menu, Sun, Moon, LogIn, User, LogOut, Plus } from "lucide-react";
@@ -76,9 +77,11 @@ const Navbar = () => {
               <div className="flex items-center space-x-4">
                 {/* Profile */}
                 <div className="flex items-center space-x-2">
-                  <img
-                    src={user?.imageUrl || "/default-avatar.png"}
+                  <Image
+                    src={user.imageUrl || "/default-avatar.png"}
                     alt="User Avatar"
+                    width={32}
+                    height={32}
                     className="w-8 h-8 rounded-full border-2 border-yellow-300"
                   />
                   <Link

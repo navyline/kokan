@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^6.9.14",
+    "@heroicons/react": "^2.2.0",
     "@prisma/client": "^6.2.1",
     "@radix-ui/react-dropdown-menu": "^2.1.4",
     "@radix-ui/react-label": "^2.1.1",
@@ -54,7 +55,8 @@
     "typescript": "^5.7.3"
   },
   "pkg": {
-    "assets": ["node_modules/.prisma/client/*.node"]
+    "assets": [
+      "node_modules/.prisma/client/*.node"
+    ]
   }
-
 }

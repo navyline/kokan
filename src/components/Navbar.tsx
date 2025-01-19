@@ -1,159 +1,139 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { useTheme } from "next-themes";
-import { useUser, SignInButton, SignOutButton, SignUpButton } from "@clerk/nextjs";
-import { Bell, Menu, Sun, Moon, LogIn, User, LogOut, Plus } from "lucide-react";
+import { Bell, PlusCircle, Info, LogIn } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
+import Search from "./Search";
 
-const Navbar = () => {
-  const { theme, setTheme } = useTheme();
-  const { isSignedIn, user } = useUser();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+function Logo() {
+  return (
+    <a href="/" className="flex items-center space-x-2">
+      <div className="w-10 h-10 bg-gradient-to-r from-teal-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
+        KO
+      </div>
+      <span className="text-xl font-bold text-gray-800">Kokan</span>
+    </a>
+  );
+}
+
+<Search />;
+
+function CreatePostButton() {
+  return (
+    <a
+      href="/posts/create"
+      className="flex items-center space-x-2 bg-teal-500 text-white px-4 py-2 rounded-full hover:bg-teal-600 transition"
+    >
+      <PlusCircle className="h-5 w-5" />
+      <span>Create Post</span>
+    </a>
+  );
+}
+
+function Notification() {
+  const [notifications] = useState(5); // Mock notifications count
 
   return (
-    <nav className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16 items-center">
-          {/* Logo */}
-          <div className="flex-shrink-0 flex items-center">
-            <Link href="/" className="text-3xl font-bold font-mono tracking-wider">
-              Kokan
-            </Link>
-          </div>
+    <button className="relative">
+      <Bell className="h-6 w-6 text-gray-600 hover:text-teal-500" />
+      {notifications > 0 && (
+        <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+          {notifications}
+        </span>
+      )}
+    </button>
+  );
+}
 
-          {/* Main Navigation */}
-          <div className="hidden sm:flex sm:items-center sm:space-x-6">
-            <Link
-              href="/"
-              className="hover:text-yellow-300 transition duration-300"
-            >
-              Home
-            </Link>
-            <Link
-              href="/posts"
-              className="hover:text-yellow-300 transition duration-300"
-            >
-              Browse Posts
-            </Link>
-            {isSignedIn && (
-              <Link
-                href="/posts/new"
-                className="hover:text-yellow-300 transition duration-300 flex items-center"
-              >
-                <Plus size={16} />
-                <span className="ml-1">Create Post</span>
-              </Link>
-            )}
-            <Link
-              href="/about"
-              className="hover:text-yellow-300 transition duration-300"
-            >
-              About Us
-            </Link>
-          </div>
+function UserMenu() {
+  const { user } = useUser();
+  const [menuOpen, setMenuOpen] = useState(false);
 
-          {/* Actions */}
-          <div className="flex items-center space-x-4">
-            {/* Theme Toggle */}
-            <button
-              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-              className="p-2 rounded-full bg-yellow-300 hover:bg-yellow-400 text-black transition duration-300"
-            >
-              {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
-            </button>
+  if (!user) {
+    return (
+      <a
+        href="/sign-in"
+        className="flex items-center space-x-2 bg-gray-200 text-gray-800 px-4 py-2 rounded-full hover:bg-gray-300 transition"
+      >
+        <LogIn className="h-5 w-5" />
+        <span>Sign In</span>
+      </a>
+    );
+  }
 
-            {/* Notifications */}
-            <button className="relative p-2 rounded-full bg-yellow-300 hover:bg-yellow-400 text-black transition duration-300">
-              <Bell size={18} />
-              <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold text-white bg-red-500 rounded-full">
-                3
-              </span>
-            </button>
-
-            {/* Authentication */}
-            {isSignedIn ? (
-              <div className="flex items-center space-x-4">
-                {/* Profile */}
-                <div className="flex items-center space-x-2">
-                  <Image
-                    src={user.imageUrl || "/default-avatar.png"}
-                    alt="User Avatar"
-                    width={32}
-                    height={32}
-                    className="w-8 h-8 rounded-full border-2 border-yellow-300"
-                  />
-                  <Link
-                    href="/profile"
-                    className="text-yellow-100 hover:text-yellow-300 transition duration-300"
-                  >
-                    {user?.firstName || "Profile"}
-                  </Link>
-                </div>
-
-                {/* Sign Out */}
-                <SignOutButton>
-                  <button className="flex items-center space-x-2 p-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition duration-300">
-                    <LogOut size={18} />
-                    <span>Sign Out</span>
-                  </button>
-                </SignOutButton>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-4">
-                {/* Sign In */}
-                <SignInButton>
-                  <button className="flex items-center space-x-2 p-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition duration-300">
-                    <LogIn size={18} />
-                    <span>Sign In</span>
-                  </button>
-                </SignInButton>
-
-                {/* Sign Up */}
-                <SignUpButton>
-                  <button className="flex items-center space-x-2 p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition duration-300">
-                    <User size={18} />
-                    <span>Sign Up</span>
-                  </button>
-                </SignUpButton>
-              </div>
-            )}
-
-            {/* Mobile Menu */}
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="sm:hidden p-2 rounded-full bg-yellow-300 hover:bg-yellow-400 text-black transition duration-300"
-            >
-              <Menu size={18} />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile Menu */}
-      {isMenuOpen && (
-        <div className="sm:hidden bg-white text-black">
-          <div className="px-4 py-2 space-y-1">
-            <Link href="/" className="block hover:text-blue-500">
-              Home
-            </Link>
-            <Link href="/posts" className="block hover:text-blue-500">
-              Browse Posts
-            </Link>
-            {isSignedIn && (
-              <Link href="/posts/new" className="block hover:text-blue-500">
-                Create Post
-              </Link>
-            )}
-            <Link href="/about" className="block hover:text-blue-500">
-              About Us
-            </Link>
-          </div>
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setMenuOpen(!menuOpen)}
+        className="flex items-center space-x-2"
+      >
+        <img
+          src={user.imageUrl}
+          alt="Profile"
+          className="h-8 w-8 rounded-full border border-gray-300"
+        />
+        <span className="hidden sm:block text-gray-700">{user.firstName}</span>
+      </button>
+      {menuOpen && (
+        <div className="absolute right-0 mt-2 bg-white shadow-lg rounded-md py-2 w-40">
+          <a
+            href="/dashboard"
+            className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+          >
+            Dashboard
+          </a>
+          <a
+            href="/favorites"
+            className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+          >
+            My Favorites
+          </a>
+          <a
+            href="/settings"
+            className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+          >
+            Settings
+          </a>
+          <a
+            href="/logout"
+            className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+          >
+            Logout
+          </a>
         </div>
       )}
+    </div>
+  );
+}
+
+function AboutLink() {
+  return (
+    <a
+      href="/about"
+      className="flex items-center space-x-2 text-gray-600 hover:text-teal-500 transition"
+    >
+      <Info className="h-5 w-5" />
+      <span>About</span>
+    </a>
+  );
+}
+
+export default function Navbar() {
+  return (
+    <nav className="bg-white shadow-md px-6 py-3 flex items-center justify-between">
+      {/* Left Section: Logo */}
+      <Logo />
+
+      {/* Center Section: Search Bar */}
+      <Search />
+
+      {/* Right Section: Buttons */}
+      <div className="flex space-x-4 items-center">
+        <CreatePostButton />
+        <Notification />
+        <UserMenu />
+        <AboutLink />
+      </div>
     </nav>
   );
-};
-
-export default Navbar;
+}

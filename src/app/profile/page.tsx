@@ -1,7 +1,6 @@
-// rafce
-const ProfilePage = () => {
+function Profile() {
   return (
-    <div>ProfilePage</div>
+    <div>Profile</div>
   )
 }
-export default ProfilePage
+export default Profile

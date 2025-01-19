@@ -13,8 +13,8 @@ model Profile {
   clerkId         String         @unique
   firstName       String
   lastName        String
-  userName        String?
-  email           String?
+  userName        String         @unique
+  email           String?        @unique
   profileImage    String?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
@@ -28,6 +28,7 @@ model Profile {
   reviewsWritten  Review[]       @relation("ReviewerProfile")
   tradeOfferBy    Trade[]        @relation("OfferByProfile")
   tradeOfferTo    Trade[]        @relation("OfferToProfile")
+  @@index([userName, email])
 }
 
 model Post {
@@ -35,7 +36,7 @@ model Post {
   name        String
   description String
   image       String?
-  province    String
+  province    String      // ต้องกำหนดฟิลด์นี้ใน schema
   lat         Float?
   lng         Float?
   price       Int
@@ -51,6 +52,7 @@ model Post {
   offeredBy   Trade[]    @relation("PostOffered")
   wantedBy    Trade[]    @relation("PostWanted")
 }
+
 
 model Favorite {
   id        String   @id @default(uuid())

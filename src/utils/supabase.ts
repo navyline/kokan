@@ -1,27 +1,64 @@
 import { createClient } from "@supabase/supabase-js";
 
-const bucket = "landmark-bucket";
-const url = process.env.SUPABASE_URL as string;
-const key = process.env.SUPABASE_KEY as string;
+// Initializing Supabase client
+const supabaseUrl = process.env.SUPABASE_URL!;
+const supabaseKey = process.env.SUPABASE_KEY!;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Create Supabase client
-const supabase = createClient(url, key);
+/**
+ * Sanitize file name by replacing special characters with "-"
+ */
+function sanitizeFileName(fileName: string): string {
+  return fileName.replace(/[^a-zA-Z0-9.-]/g, "-");
+}
 
-// Upload file using standard upload
-export async function uploadFile(image: File) {
-  const timeStamp = Date.now();
-  const newName = `Roitai-${timeStamp}-${image.name}`;
+/**
+ * Upload file to Supabase Storage and return its public URL
+ */
+export async function uploadFile(file: File): Promise<string> {
+  const sanitizedFileName = sanitizeFileName(file.name); // Sanitize file name
+  const fileName = `${Date.now()}-${sanitizedFileName}`; // Add timestamp to ensure unique file name
 
-  const { data } = await supabase.storage
-    .from(bucket)
-    .upload(newName, image,{
-      cacheControl:'3600'
+  console.log("Uploading file:", fileName);
+
+  // Step 1: Upload file to Supabase Storage
+  const { data, error } = await supabase.storage
+    .from("Kokan_bucket") // Replace with your actual bucket name
+    .upload(fileName, file, {
+      cacheControl: "3600", // Cache for 1 hour
     });
 
-  if (!data) throw new Error("Image upload failed!!!");
-//   const { data } = supabase.storage.from('bucket').getPublicUrl('filePath.jpg')
-// console.log(data.publicUrl)
-  return supabase.storage
-  .from(bucket)
-  .getPublicUrl(newName).data.publicUrl
+  // Handle upload errors
+  if (error) {
+    console.error("Error uploading file:", error);
+    throw new Error("Image upload failed!!!");
+  }
+
+  console.log("Upload response data:", data);
+
+  // Step 2: Generate Public URL
+  const { data: publicData, error: publicError } = supabase.storage
+    .from("Kokan_bucket")
+    .getPublicUrl(data.path);
+
+  if (publicError || !publicData?.publicUrl) {
+    console.error("Error generating public URL:", publicError);
+    console.log("Attempting to generate Signed URL as fallback...");
+
+    // Step 3: Fallback to Signed URL
+    const { data: signedData, error: signedError } = await supabase.storage
+      .from("Kokan_bucket")
+      .createSignedUrl(data.path, 60 * 60); // URL valid for 1 hour
+
+    if (signedError || !signedData?.signedUrl) {
+      console.error("Error generating signed URL:", signedError);
+      throw new Error("Failed to generate public or signed URL.");
+    }
+
+    console.log("Generated Signed URL:", signedData.signedUrl);
+    return signedData.signedUrl;
+  }
+
+  console.log("Uploaded file URL:", publicData.publicUrl);
+  return publicData.publicUrl;
 }

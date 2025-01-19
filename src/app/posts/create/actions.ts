@@ -4,7 +4,7 @@ import { uploadFile } from "@/utils/supabase";
 import db from "@/utils/db";
 import { currentUser } from "@clerk/nextjs/server";
 
-export const createPostAction = async (formData: FormData): Promise<{ message: string }> => {
+export async function createPostAction(formData: FormData): Promise<void> {
   try {
     const user = await currentUser();
     if (!user) {
@@ -44,9 +44,13 @@ export const createPostAction = async (formData: FormData): Promise<{ message: s
       },
     });
 
-    return { message: "Post created successfully!" };
-  } catch (error: any) {
-    console.error("Error creating post:", error.message);
+    return;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error("Error creating post:", error.message);
+    } else {
+      console.error("Error creating post:", error);
+    }
     throw new Error("Failed to create post.");
   }
 };

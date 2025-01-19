@@ -6,8 +6,14 @@ import MapLandmark from "@/components/map/Map";
 import { redirect } from "next/navigation";
 import Image from "next/image";
 
-const PostDetail = async ({ params }: { params: { id: string } }) => {
-  const { id } = await params;
+interface PostDetailProps {
+  params: {
+    id: string;
+  };
+}
+
+const PostDetail = async ({ params }: PostDetailProps) => {
+  const { id } = params;
   const post = await fetchPostDetail({ id });
   if (!post) redirect("/");
 

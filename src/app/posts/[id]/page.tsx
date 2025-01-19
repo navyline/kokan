@@ -6,14 +6,17 @@ import MapLandmark from "@/components/map/Map";
 import { redirect } from "next/navigation";
 import Image from "next/image";
 
-interface PageProps {
-  params: {
+interface PostDetailProps {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
-const PostDetail = async ({ params }: PageProps) => {
-  const post = await fetchPostDetail({ id: params.id });
+const PostDetail = async ({ params }: PostDetailProps) => {
+  const resolvedParams = await params; // ใช้ await ในการดึงข้อมูล params
+  const { id } = resolvedParams;
+
+  const post = await fetchPostDetail({ id });
   if (!post) redirect("/");
 
   return (

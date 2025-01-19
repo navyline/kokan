@@ -5,6 +5,7 @@ import { Bell, PlusCircle, Info, LogIn } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 import Search from "./Search";
 import Link from "next/link";
+import Image from 'next/image';
 
 function Logo() {
   return (
@@ -68,7 +69,7 @@ function UserMenu() {
         onClick={() => setMenuOpen(!menuOpen)}
         className="flex items-center space-x-2"
       >
-        <img
+        <Image
           src={user.imageUrl}
           alt="Profile"
           className="h-8 w-8 rounded-full border border-gray-300"

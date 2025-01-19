@@ -22,11 +22,12 @@ const Search = () => {
   }, 500);
 
   useEffect(() => {
+    const searchParam = searchParams.get("search");
     // code body
-    if (!searchParams.get("search")) {
+    if (!searchParam) {
       setSearch("");
     }
-  }, [searchParams.get("search")]);
+  }, [searchParams]);
 
   return (
     <Input

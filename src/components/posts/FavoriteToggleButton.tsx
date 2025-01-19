@@ -6,7 +6,7 @@ interface FavoriteToggleButtonProps {
   postId: string;
 }
 
-const FavoriteToggleButton: React.FC<FavoriteToggleButtonProps> = ({ postId }) => {
+const FavoriteToggleButton: React.FC<FavoriteToggleButtonProps> = () => {
   const [isFavorite, setIsFavorite] = useState(false);
 
   const toggleFavorite = async () => {

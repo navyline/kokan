@@ -4,15 +4,16 @@ import { useState } from "react";
 import { Bell, PlusCircle, Info, LogIn } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 import Search from "./Search";
+import Link from "next/link";
 
 function Logo() {
   return (
-    <a href="/" className="flex items-center space-x-2">
+    <Link href="/" className="flex items-center space-x-2">
       <div className="w-10 h-10 bg-gradient-to-r from-teal-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
         KO
       </div>
       <span className="text-xl font-bold text-gray-800">Kokan</span>
-    </a>
+    </Link>
   );
 }
 
@@ -20,13 +21,13 @@ function Logo() {
 
 function CreatePostButton() {
   return (
-    <a
+    <Link
       href="/posts/create"
       className="flex items-center space-x-2 bg-teal-500 text-white px-4 py-2 rounded-full hover:bg-teal-600 transition"
     >
       <PlusCircle className="h-5 w-5" />
       <span>Create Post</span>
-    </a>
+    </Link>
   );
 }
 
@@ -51,13 +52,13 @@ function UserMenu() {
 
   if (!user) {
     return (
-      <a
+      <Link
         href="/sign-in"
         className="flex items-center space-x-2 bg-gray-200 text-gray-800 px-4 py-2 rounded-full hover:bg-gray-300 transition"
       >
         <LogIn className="h-5 w-5" />
         <span>Sign In</span>
-      </a>
+      </Link>
     );
   }
 

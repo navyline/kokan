@@ -37,12 +37,12 @@ export async function uploadFile(file: File): Promise<string> {
   console.log("Upload response data:", data);
 
   // Step 2: Generate Public URL
-  const { data: publicData, error: publicError } = supabase.storage
+  const { data: publicData } = supabase.storage
     .from("Kokan_bucket")
     .getPublicUrl(data.path);
 
-  if (publicError || !publicData?.publicUrl) {
-    console.error("Error generating public URL:", publicError);
+  if (!publicData.publicUrl) {
+    console.error("Error generating public URL");
     console.log("Attempting to generate Signed URL as fallback...");
 
     // Step 3: Fallback to Signed URL

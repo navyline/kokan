@@ -22,7 +22,7 @@ const PostDetail = async ({ params }: { params: { id: string } }) => {
           <div className="flex flex-col items-center">
             <div className="relative w-full h-96 mb-4">
               <Image
-                src={post.image}
+                src={post.image || '/default-image.jpg'}
                 alt={post.name}
                 fill
                 className="object-cover rounded-lg"
@@ -31,7 +31,7 @@ const PostDetail = async ({ params }: { params: { id: string } }) => {
             <div className="flex gap-2">
               {/* Add thumbnail images if available */}
               <Image
-                src={post.image}
+                src={post.image || '/default-image.jpg'}
                 alt="Thumbnail"
                 width={60}
                 height={60}
@@ -75,7 +75,7 @@ const PostDetail = async ({ params }: { params: { id: string } }) => {
       <div className="mt-8">
         <h2 className="text-xl font-bold text-gray-800 mb-4">Meeting Spot</h2>
         <div className="h-72 rounded-lg overflow-hidden">
-          <MapLandmark location={{ lat: post.lat, lng: post.lng }} />
+          <MapLandmark location={{ lat: post.lat ?? 0, lng: post.lng ?? 0 }} />
         </div>
       </div>
 

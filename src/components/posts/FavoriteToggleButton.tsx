@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 
-const FavoriteToggleButton = () => {
+interface FavoriteToggleButtonProps {
+  postId: string;
+}
+
+const FavoriteToggleButton: React.FC<FavoriteToggleButtonProps> = ({ postId }) => {
   const [isFavorite, setIsFavorite] = useState(false);
 
   const toggleFavorite = async () => {

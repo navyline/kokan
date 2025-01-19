@@ -3,6 +3,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "./ui/input";
 import { useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
+import { Suspense } from 'react'
 
 const Search = () => {
   const searchParams = useSearchParams();
@@ -30,6 +31,7 @@ const Search = () => {
   }, [searchParams]);
 
   return (
+    <Suspense>
     <Input
       type="text"
       placeholder="Seach ..."
@@ -40,6 +42,7 @@ const Search = () => {
       }}
       value={search}
     />
+    </Suspense>
   );
 };
 export default Search;

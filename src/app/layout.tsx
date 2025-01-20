@@ -1,6 +1,7 @@
-// app/layout.tsx
 import { ClerkProvider } from "@clerk/nextjs";
 import Navbar from "@/components/Navbar";
+import ProgressBarProvider from "@/components/ProgressBarProvider";
+import { Suspense } from "react";
 import "./globals.css";
 
 export const metadata = {
@@ -16,8 +17,12 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <ClerkProvider>
-        <Navbar />
-          {children}
+          <Suspense fallback={<div>Loading...</div>}>
+            <ProgressBarProvider>
+              <Navbar />
+              {children}
+            </ProgressBarProvider>
+          </Suspense>
         </ClerkProvider>
       </body>
     </html>

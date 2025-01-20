@@ -36,7 +36,7 @@ model Post {
   name        String
   description String
   image       String?
-  tags        String[]
+  tags        String?
   province    String
   lat         Float?
   lng         Float?

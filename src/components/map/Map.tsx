@@ -47,15 +47,16 @@ const MapLandmark = ({
   location?: { lat: number; lng: number };
 }) => {
   const defaultLocation: Latlng = [13, 100];
+  const [position, setPosition] = useState<Latlng | null>(null); // ย้าย useState ออกมาข้างนอก
 
-  const [position, setPosition] = useState<Latlng | null>(null);
-  // console.log(position);
+  // เพิ่ม console log ดูว่าตำแหน่งเปลี่ยนหรือไม่
+  console.log("Current position:", position);
+
   return (
     <>
       <h1 className="mt-4 font-semibold">Where are you?</h1>
 
       <input type="hidden" name="lat" value={position ? position[0] : ""} />
-
       <input type="hidden" name="lng" value={position ? position[1] : ""} />
 
       <MapContainer
@@ -91,4 +92,5 @@ const MapLandmark = ({
     </>
   );
 };
+
 export default MapLandmark;

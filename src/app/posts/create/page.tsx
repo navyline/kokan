@@ -1,5 +1,8 @@
+
 import MapLandmark from "@/components/map/Map";
 import { createPostAction } from "./actions";
+
+
 
 export default function CreatePost() {
   const categories = [
@@ -20,10 +23,7 @@ export default function CreatePost() {
         <h1 className="text-3xl font-extrabold text-center mb-8 text-gradient bg-gradient-to-r from-blue-500 to-purple-500 text-transparent bg-clip-text">
           Create Your Post
         </h1>
-        <form
-          action={createPostAction}
-          className="space-y-6"
-        >
+        <form action={createPostAction} className="space-y-6">
           {/* Name Field */}
           <div className="relative">
             <label className="block text-sm font-medium text-gray-700">
@@ -52,7 +52,7 @@ export default function CreatePost() {
             ></textarea>
           </div>
 
-          {/* Price Field */}
+          {/* Price and Province Fields */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">
@@ -67,7 +67,6 @@ export default function CreatePost() {
               />
             </div>
 
-            {/* Province Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 Province

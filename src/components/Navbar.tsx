@@ -72,8 +72,11 @@ function UserMenu() {
         <Image
           src={user.imageUrl}
           alt="Profile"
+          width={32} 
+          height={32}
           className="h-8 w-8 rounded-full border border-gray-300"
         />
+
         <span className="hidden sm:block text-gray-700">{user.firstName}</span>
       </button>
       {menuOpen && (

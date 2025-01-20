@@ -23,11 +23,19 @@ export async function createPostAction(formData: FormData): Promise<void> {
     const description = formData.get("description") as string;
     const price = parseFloat(formData.get("price") as string);
     const province = formData.get("province") as string;
-    const category = formData.get("category") as string; // ดึงข้อมูลประเภทจาก form
+    const category = formData.get("category") as string;
     const image = formData.get("image") as File;
+
+    // ดึงค่าพิกัดจาก FormData
+    const lat = parseFloat(formData.get("lat") as string);
+    const lng = parseFloat(formData.get("lng") as string);
 
     if (!name || !description || isNaN(price) || !province || !category || !image) {
       throw new Error("Please fill out all required fields.");
+    }
+
+    if (isNaN(lat) || isNaN(lng)) {
+      throw new Error("Please select a valid location.");
     }
 
     const imageUrl = await uploadFile(image);
@@ -38,8 +46,10 @@ export async function createPostAction(formData: FormData): Promise<void> {
         description,
         price,
         province,
-        categoryId: category, // บันทึก Category ID
+        categoryId: category,
         image: imageUrl,
+        lat, // บันทึก latitude
+        lng, // บันทึก longitude
         profileId: profile.id,
       },
     });
@@ -53,4 +63,4 @@ export async function createPostAction(formData: FormData): Promise<void> {
     }
     throw new Error("Failed to create post.");
   }
-};
+}

@@ -3,8 +3,9 @@
 import { uploadFile } from "@/utils/supabase";
 import db from "@/utils/db";
 import { currentUser } from "@clerk/nextjs/server";
+import { Condition } from "@prisma/client";
 
-export async function createPostAction(formData: FormData): Promise<void> {
+export async function createPostAction(formData: FormData): Promise<string> {
   try {
     const user = await currentUser();
     if (!user) {
@@ -24,13 +25,13 @@ export async function createPostAction(formData: FormData): Promise<void> {
     const price = parseFloat(formData.get("price") as string);
     const province = formData.get("province") as string;
     const category = formData.get("category") as string;
+    const condition = formData.get("condition") as Condition;
     const image = formData.get("image") as File;
 
-    // ดึงค่าพิกัดจาก FormData
     const lat = parseFloat(formData.get("lat") as string);
     const lng = parseFloat(formData.get("lng") as string);
 
-    if (!name || !description || isNaN(price) || !province || !category || !image) {
+    if (!name || !description || isNaN(price) || !province || !category || !condition || !image) {
       throw new Error("Please fill out all required fields.");
     }
 
@@ -40,21 +41,23 @@ export async function createPostAction(formData: FormData): Promise<void> {
 
     const imageUrl = await uploadFile(image);
 
-    await db.post.create({
+    const newPost = await db.post.create({
       data: {
         name,
         description,
         price,
         province,
         categoryId: category,
+        condition,
         image: imageUrl,
-        lat, // บันทึก latitude
-        lng, // บันทึก longitude
+        lat,
+        lng,
         profileId: profile.id,
       },
     });
 
-    return;
+    // ส่ง URL ของโพสต์กลับไปยัง Client
+    return `/posts/${newPost.id}`;
   } catch (error: unknown) {
     if (error instanceof Error) {
       console.error("Error creating post:", error.message);

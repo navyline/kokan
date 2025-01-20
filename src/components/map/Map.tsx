@@ -47,10 +47,7 @@ const MapLandmark = ({
   location?: { lat: number; lng: number };
 }) => {
   const defaultLocation: Latlng = [13, 100];
-  const [position, setPosition] = useState<Latlng | null>(null); // ย้าย useState ออกมาข้างนอก
-
-  // เพิ่ม console log ดูว่าตำแหน่งเปลี่ยนหรือไม่
-  console.log("Current position:", position);
+  const [position, setPosition] = useState<Latlng | null>(null);
 
   return (
     <>

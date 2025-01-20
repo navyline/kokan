@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Bell, PlusCircle, Info, LogIn } from "lucide-react";
-import { useUser } from "@clerk/nextjs";
+import { Bell, PlusCircle, LogIn } from "lucide-react";
+import { useUser, SignOutButton } from "@clerk/nextjs";
 import Search from "./Search";
 import Link from "next/link";
-import Image from 'next/image';
+import Image from "next/image";
 
 function Logo() {
   return (
@@ -18,16 +18,13 @@ function Logo() {
   );
 }
 
-<Search />;
-
 function CreatePostButton() {
   return (
     <Link
       href="/posts/create"
-      className="flex items-center space-x-2 bg-teal-500 text-white px-4 py-2 rounded-full hover:bg-teal-600 transition"
+      className="p-3 bg-yellow-400 rounded-full text-white hover:bg-yellow-500 transition flex items-center justify-center shadow-md"
     >
-      <PlusCircle className="h-5 w-5" />
-      <span>Create Post</span>
+      <PlusCircle className="h-6 w-6" />
     </Link>
   );
 }
@@ -36,14 +33,16 @@ function Notification() {
   const [notifications] = useState(5); // Mock notifications count
 
   return (
-    <button className="relative">
-      <Bell className="h-6 w-6 text-gray-600 hover:text-teal-500" />
+    <div className="relative">
+      <button className="p-3 text-gray-600 hover:text-teal-500 transition">
+        <Bell className="h-6 w-6" />
+      </button>
       {notifications > 0 && (
-        <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+        <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
           {notifications}
         </span>
       )}
-    </button>
+    </div>
   );
 }
 
@@ -55,7 +54,7 @@ function UserMenu() {
     return (
       <Link
         href="/sign-in"
-        className="flex items-center space-x-2 bg-gray-200 text-gray-800 px-4 py-2 rounded-full hover:bg-gray-300 transition"
+        className="flex items-center bg-gray-200 text-gray-800 px-4 py-2 rounded-full hover:bg-gray-300 transition"
       >
         <LogIn className="h-5 w-5" />
         <span>Sign In</span>
@@ -70,74 +69,61 @@ function UserMenu() {
         className="flex items-center space-x-2"
       >
         <Image
-          src={user.imageUrl}
+          src={user.imageUrl || "/default-profile.png"}
           alt="Profile"
-          width={32} 
+          width={32}
           height={32}
           className="h-8 w-8 rounded-full border border-gray-300"
         />
-
         <span className="hidden sm:block text-gray-700">{user.firstName}</span>
       </button>
       {menuOpen && (
         <div className="absolute right-0 mt-2 bg-white shadow-lg rounded-md py-2 w-40">
-          <a
+          <Link
             href="/dashboard"
             className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
           >
             Dashboard
-          </a>
-          <a
+          </Link>
+          <Link
             href="/favorites"
             className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
           >
             My Favorites
-          </a>
-          <a
+          </Link>
+          <Link
             href="/settings"
             className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
           >
             Settings
-          </a>
-          <a
-            href="/logout"
-            className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-          >
-            Logout
-          </a>
+          </Link>
+          <SignOutButton redirectUrl="/">
+            <span className="block px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer">
+              Logout
+            </span>
+          </SignOutButton>
         </div>
       )}
     </div>
   );
 }
 
-function AboutLink() {
-  return (
-    <a
-      href="/about"
-      className="flex items-center space-x-2 text-gray-600 hover:text-teal-500 transition"
-    >
-      <Info className="h-5 w-5" />
-      <span>About</span>
-    </a>
-  );
-}
-
 export default function Navbar() {
   return (
-    <nav className="bg-white shadow-md px-6 py-3 flex items-center justify-between">
-      {/* Left Section: Logo */}
+    <nav className="bg-white shadow-md px-6 py-4 flex items-center justify-between">
+      {/* Logo */}
       <Logo />
 
-      {/* Center Section: Search Bar */}
-      <Search />
+      {/* Search */}
+      <div className="flex-grow mx-4">
+        <Search />
+      </div>
 
-      {/* Right Section: Buttons */}
-      <div className="flex space-x-4 items-center">
+      {/* Actions */}
+      <div className="flex items-center space-x-4">
         <CreatePostButton />
         <Notification />
         <UserMenu />
-        <AboutLink />
       </div>
     </nav>
   );

@@ -7,7 +7,7 @@ export const fetchPostDetail = async ({ id }: { id: string }) => {
     const post = await db.post.findUnique({
       where: { id },
       include: {
-        profile: true, // หากต้องการข้อมูลผู้สร้างโพสต์
+        profile: true,
       },
     });
 

@@ -36,7 +36,8 @@ model Post {
   name        String
   description String
   image       String?
-  province    String      // ต้องกำหนดฟิลด์นี้ใน schema
+  tags        String[]
+  province    String
   lat         Float?
   lng         Float?
   price       Int
@@ -44,6 +45,7 @@ model Post {
   updatedAt   DateTime   @updatedAt
   profileId   String
   categoryId  String?
+  condition   Condition 
   status      PostStatus @default(AVAILABLE)
   views       Int        @default(0)
   favorites   Favorite[]
@@ -142,4 +144,11 @@ enum TradeStatus {
   REJECTED
   CANCELLED
   COMPLETED
+}
+
+enum Condition {
+  NEW 
+  USED
+  LIKE_NEW
+  REFURBISHED
 }

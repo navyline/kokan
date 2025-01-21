@@ -1,8 +1,20 @@
-export default function IndexPage() {
+"use client";
+
+import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+
+export default function LandingPageClient() {
+  const { user } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (user) {
+      router.push("/home");
+    }
+  }, [user, router]);
+
   return (
-    <main className="p-4">
-      <h1 className="text-2xl font-bold">Hello Next.js App Router</h1>
-      <p>Welcome to my Next.js app!</p>
-    </main>
+    <div>Landing Page</div>
   );
 }

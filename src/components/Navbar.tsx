@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useTransition } from "react";
 import { Bell, PlusCircle, LogIn } from "lucide-react";
 import { useUser, SignOutButton } from "@clerk/nextjs";
 import Search from "./Search";
 import Link from "next/link";
 import Image from "next/image";
+import { getLocalIdByClerkId } from "@/app/actions/getLocalId"; // Server Action ตัวอย่าง
 
 function Logo() {
   return (
@@ -50,13 +51,32 @@ function UserMenu() {
   const { user } = useUser();
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // เก็บ UUID ของ profile (local ID)
+  const [localId, setLocalId] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (!user) {
+      setLocalId(null);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.set("clerkId", user.id);
+
+    startTransition(async () => {
+      const result = await getLocalIdByClerkId(formData);
+      setLocalId(result);
+    });
+  }, [user]);
+
   if (!user) {
     return (
       <Link
         href="/sign-in"
         className="flex items-center bg-gray-200 text-gray-800 px-4 py-2 rounded-full hover:bg-gray-300 transition"
       >
-        <LogIn className="h-5 w-5" />
+        <LogIn className="h-5 w-5 mr-1" />
         <span>Sign In</span>
       </Link>
     );
@@ -65,7 +85,7 @@ function UserMenu() {
   return (
     <div className="relative">
       <button
-        onClick={() => setMenuOpen(!menuOpen)}
+        onClick={() => setMenuOpen((prev) => !prev)}
         className="flex items-center space-x-2"
       >
         <Image
@@ -73,12 +93,31 @@ function UserMenu() {
           alt="Profile"
           width={32}
           height={32}
-          className="h-8 w-8 rounded-full border border-gray-300"
+          className="h-8 w-8 rounded-full border border-gray-300 object-cover"
         />
-        <span className="hidden sm:block text-gray-700">{user.firstName}</span>
+        <span className="hidden sm:block text-gray-700">
+          {user.firstName || "User"}
+        </span>
       </button>
+
       {menuOpen && (
-        <div className="absolute right-0 mt-2 bg-white shadow-lg rounded-md py-2 w-40">
+        <div
+          className="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-md py-2 border border-gray-100 z-50"
+        >
+          {isPending && <p className="px-4 py-2 text-gray-500">Loading...</p>}
+          {localId ? (
+            <Link
+              href={`/profile/${localId}`}
+              className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+            >
+              My Profile
+            </Link>
+          ) : (
+            !isPending && (
+              <p className="px-4 py-2 text-gray-500">No Profile Found</p>
+            )
+          )}
+
           <Link
             href="/dashboard"
             className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
@@ -121,7 +160,7 @@ export default function Navbar() {
 
       {/* Actions */}
       <div className="flex items-center space-x-4">
-        <CreatePostButton />
+        <CreatePostButton /> 
         <Notification />
         <UserMenu />
       </div>

@@ -2,17 +2,16 @@ import { clerkMiddleware } from "@clerk/nextjs/server";
 import { NextResponse, NextRequest, NextFetchEvent } from "next/server";
 
 export default function customMiddleware(req: NextRequest, evt: NextFetchEvent) {
-  const response = clerkMiddleware()(req, evt); // ส่ง req และ event
+  const response = clerkMiddleware()(req, evt); 
 
   const url = req.nextUrl;
-  const userId = req.headers.get("clerk-user-id"); // ดึง userId จาก header
+  const userId = req.headers.get("clerk-user-id");
 
-  // ถ้าผู้ใช้ล็อกอินและอยู่หน้า root "/"
   if (userId && url.pathname === "/") {
-    return NextResponse.redirect(new URL("/home", req.url)); // เปลี่ยนไปหน้า /home
+    return NextResponse.redirect(new URL("/home", req.url));
   }
 
-  return response; // ส่ง response กลับ
+  return response;
 }
 
 export const config = {

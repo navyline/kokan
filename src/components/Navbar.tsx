@@ -6,7 +6,7 @@ import { useUser, SignOutButton } from "@clerk/nextjs";
 import Search from "./Search";
 import Link from "next/link";
 import Image from "next/image";
-import { getLocalIdByClerkId } from "@/app/actions/getLocalId";
+import { getLocalIdByClerkId } from "@/app/actions/getLocalId"; // Server Action
 
 function Logo() {
   return (
@@ -31,25 +31,14 @@ function CreatePostButton() {
 }
 
 function Notification() {
-  const [notifications, setNotifications] = useState<number | null>(null);
-
-  useEffect(() => {
-    // Mock async fetch for notifications
-    const fetchNotifications = async () => {
-      setTimeout(() => {
-        setNotifications(5); // Example: Replace with actual API call
-      }, 1000);
-    };
-
-    fetchNotifications();
-  }, []);
+  const [notifications] = useState(5); // Mock notifications count
 
   return (
     <div className="relative">
       <button className="p-3 text-gray-600 hover:text-teal-500 transition">
         <Bell className="h-6 w-6" />
       </button>
-      {notifications !== null && notifications > 0 && (
+      {notifications > 0 && (
         <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
           {notifications}
         </span>
@@ -61,6 +50,7 @@ function Notification() {
 function UserMenu() {
   const { user } = useUser();
   const [menuOpen, setMenuOpen] = useState(false);
+
   const [localId, setLocalId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -74,12 +64,8 @@ function UserMenu() {
     formData.set("clerkId", user.id);
 
     startTransition(async () => {
-      try {
-        const result = await getLocalIdByClerkId(formData);
-        setLocalId(result);
-      } catch (error) {
-        console.error("Failed to fetch localId:", error);
-      }
+      const result = await getLocalIdByClerkId(formData);
+      setLocalId(result);
     });
   }, [user]);
 
@@ -114,7 +100,9 @@ function UserMenu() {
       </button>
 
       {menuOpen && (
-        <div className="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-md py-2 border border-gray-100 z-50">
+        <div
+          className="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-md py-2 border border-gray-100 z-50"
+        >
           {isPending && <p className="px-4 py-2 text-gray-500">Loading...</p>}
           {localId ? (
             <Link
@@ -162,11 +150,9 @@ export default function Navbar() {
   return (
     <nav className="bg-white shadow-md px-6 py-4 flex items-center justify-between">
       <Logo />
-
       <div className="flex-grow mx-4">
         <Search />
       </div>
-
       <div className="flex items-center space-x-4">
         <CreatePostButton />
         <Notification />

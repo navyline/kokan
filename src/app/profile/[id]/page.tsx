@@ -7,9 +7,10 @@ import db from "@/utils/db";
 import { getProfileById, followUser, unfollowUser, blockUser, unblockUser } from "./actions";
 import { User } from "lucide-react";
 import type { Profile } from "@prisma/client";
+
 export const dynamic = "force-dynamic";
 
-// ---- PostCardLite Component ----
+// ---- PostCardLite: ไม่แสดงข้อมูลโปรไฟล์, แสดงเฉพาะโพสต์ (like/comment/status) ----
 type PostLite = {
   id: string;
   name: string;
@@ -47,13 +48,13 @@ function PostCardLite({ post }: { post: PostLite }) {
   );
 }
 
-// ---- ProfilePage ----
+// ---------------------- หน้าโปรไฟล์หลัก ----------------------
 type ProfilePageProps = {
-  params: { id: string };
+  params: Promise<{ id: string }>; // รองรับ Promise ของ params
 };
 
-export default async function ProfilePage({ params }: ProfilePageProps) {
-  const { id } = await params; // Await params to access the `id` property
+export default async function ProfilePage(props: ProfilePageProps) {
+  const { id } = await props.params; // แก้ไขเพื่อรอการ resolved ของ params
 
   const user = await currentUser();
   const profile = await getProfileById(id);
@@ -175,7 +176,6 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         </div>
       </div>
 
-      {/* Posts Section */}
       <div className="max-w-4xl mx-auto mt-4 px-4">
         <h2 className="text-lg font-semibold mb-2">
           Posts ของ {profile.userName}
@@ -191,9 +191,9 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                   id: p.id,
                   name: p.name,
                   image: p.image,
-                  likesCount: 5, // mock data
-                  commentsCount: 2, // mock data
-                  status: "PENDING", // mock data
+                  likesCount: 5, 
+                  commentsCount: 2, 
+                  status: "PENDING", 
                 }}
               />
             ))

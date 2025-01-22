@@ -7,15 +7,16 @@ import db from "@/utils/db";
 import { getProfileById, followUser, unfollowUser, blockUser, unblockUser } from "./actions";
 import { User } from "lucide-react";
 import type { Profile } from "@prisma/client";
+export const dynamic = "force-dynamic";
 
-// ---- PostCardLite: ไม่แสดงข้อมูลโปรไฟล์, แสดงเฉพาะโพสต์ (like/comment/status) ----
+// ---- PostCardLite Component ----
 type PostLite = {
   id: string;
   name: string;
   image?: string | null;
   likesCount?: number;
   commentsCount?: number;
-  status?: string;  
+  status?: string;
 };
 
 function PostCardLite({ post }: { post: PostLite }) {
@@ -46,13 +47,14 @@ function PostCardLite({ post }: { post: PostLite }) {
   );
 }
 
-// ---------------------- หน้าโปรไฟล์หลัก ----------------------
+// ---- ProfilePage ----
 type ProfilePageProps = {
   params: { id: string };
 };
 
 export default async function ProfilePage({ params }: ProfilePageProps) {
-  const { id } = params;
+  const { id } = await params; // Await params to access the `id` property
+
   const user = await currentUser();
   const profile = await getProfileById(id);
   if (!profile) notFound();
@@ -173,7 +175,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         </div>
       </div>
 
-      {/* ตัวอย่าง Query ดึง Post มาในรูปแบบ PostLite (likesCount, commentsCount, etc.) */}
+      {/* Posts Section */}
       <div className="max-w-4xl mx-auto mt-4 px-4">
         <h2 className="text-lg font-semibold mb-2">
           Posts ของ {profile.userName}

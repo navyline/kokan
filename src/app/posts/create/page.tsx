@@ -37,9 +37,9 @@ export default function CreatePost() {
   };
 
   return (
-    <section className="p-8 bg-gradient-to-r from-green-100 via-blue-100 to-purple-100 min-h-screen flex justify-center items-center">
+    <section className="p-8 bg-linear-to-r from-green-100 via-blue-100 to-purple-100 min-h-screen flex justify-center items-center">
       <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-2xl border border-gray-200">
-        <h1 className="text-3xl font-extrabold text-center mb-8 text-gradient bg-gradient-to-r from-blue-500 to-purple-500 text-transparent bg-clip-text">
+        <h1 className="text-3xl font-extrabold text-center mb-8 text-gradient bg-linear-to-r from-blue-500 to-purple-500 text-transparent bg-clip-text">
           Create Your Post
         </h1>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -49,7 +49,7 @@ export default function CreatePost() {
               type="text"
               name="name"
               placeholder="What are you offering?"
-              className="mt-2 block w-full border border-gray-300 rounded-lg p-3 shadow-sm focus:ring-blue-400 focus:border-blue-400 transition"
+              className="mt-2 block w-full border border-gray-300 rounded-lg p-3 shadow-xs focus:ring-blue-400 focus:border-blue-400 transition"
               required
             />
           </div>
@@ -59,7 +59,7 @@ export default function CreatePost() {
             <textarea
               name="description"
               placeholder="Provide details about your item"
-              className="mt-2 block w-full border border-gray-300 rounded-lg p-3 shadow-sm focus:ring-blue-400 focus:border-blue-400 transition"
+              className="mt-2 block w-full border border-gray-300 rounded-lg p-3 shadow-xs focus:ring-blue-400 focus:border-blue-400 transition"
               rows={5}
               required
             ></textarea>
@@ -72,7 +72,7 @@ export default function CreatePost() {
                 type="number"
                 name="price"
                 placeholder="Price in THB"
-                className="mt-2 block w-full border border-gray-300 rounded-lg p-3 shadow-sm focus:ring-blue-400 focus:border-blue-400 transition"
+                className="mt-2 block w-full border border-gray-300 rounded-lg p-3 shadow-xs focus:ring-blue-400 focus:border-blue-400 transition"
                 required
               />
             </div>
@@ -83,7 +83,7 @@ export default function CreatePost() {
                 type="text"
                 name="province"
                 placeholder="e.g., Bangkok"
-                className="mt-2 block w-full border border-gray-300 rounded-lg p-3 shadow-sm focus:ring-blue-400 focus:border-blue-400 transition"
+                className="mt-2 block w-full border border-gray-300 rounded-lg p-3 shadow-xs focus:ring-blue-400 focus:border-blue-400 transition"
                 required
               />
             </div>
@@ -93,7 +93,7 @@ export default function CreatePost() {
             <label className="block text-sm font-medium text-gray-700">Condition</label>
             <select
               name="condition"
-              className="mt-2 block w-full border border-gray-300 rounded-lg p-3 shadow-sm focus:ring-blue-400 focus:border-blue-400 transition"
+              className="mt-2 block w-full border border-gray-300 rounded-lg p-3 shadow-xs focus:ring-blue-400 focus:border-blue-400 transition"
               required
             >
               <option value="">Select condition</option>
@@ -108,7 +108,7 @@ export default function CreatePost() {
             <label className="block text-sm font-medium text-gray-700">Category</label>
             <select
               name="category"
-              className="mt-2 block w-full border border-gray-300 rounded-lg p-3 shadow-sm focus:ring-blue-400 focus:border-blue-400 transition"
+              className="mt-2 block w-full border border-gray-300 rounded-lg p-3 shadow-xs focus:ring-blue-400 focus:border-blue-400 transition"
               required
             >
               <option value="">Select a category</option>
@@ -126,7 +126,7 @@ export default function CreatePost() {
               type="file"
               name="image"
               accept="image/*"
-              className="mt-2 block w-full text-sm border border-gray-300 rounded-lg shadow-sm focus:ring-blue-400 focus:border-blue-400 transition"
+              className="mt-2 block w-full text-sm border border-gray-300 rounded-lg shadow-xs focus:ring-blue-400 focus:border-blue-400 transition"
               required
             />
           </div>
@@ -135,7 +135,7 @@ export default function CreatePost() {
 
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold py-3 rounded-lg hover:opacity-90 transition shadow-md"
+            className="w-full bg-linear-to-r from-blue-500 to-purple-500 text-white font-semibold py-3 rounded-lg hover:opacity-90 transition shadow-md"
           >
             Submit Your Post
           </button>

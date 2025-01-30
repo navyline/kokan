@@ -1,7 +1,10 @@
 import db from "@/utils/db";
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+const supabase = createClient(
+  process.env.SUPABASE_URL as string,
+  process.env.SUPABASE_KEY as string
+);
 
 export async function uploadVerification(userId: string, file: File) {
   if (!file) throw new Error("File is required");

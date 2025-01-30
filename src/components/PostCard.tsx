@@ -62,7 +62,7 @@ export default function PostCard({ post }: { post: Post }) {
             <Image
               src={post.profile.profileImage || "/default-profile.png"}
               alt={`${post.profile.firstName} ${post.profile.lastName}`}
-              className="w-10 h-10 rounded-full border border-gray-300 shadow-sm"
+              className="w-10 h-10 rounded-full border border-gray-300 shadow-xs"
               width={40}
               height={40}
             />

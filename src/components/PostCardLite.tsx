@@ -33,7 +33,7 @@ export default function PostCardLite({ post }: { post: PostLite }) {
         )}
         {/* สถานะสินค้า */}
         {post.status === "PENDING" && (
-          <div className="absolute top-2 left-2 bg-pink-200 text-pink-700 px-2 py-1 z-10 rounded-md text-xs font-medium shadow">
+          <div className="absolute top-2 left-2 bg-pink-200 text-pink-700 px-2 py-1 z-10 rounded-md text-xs font-medium shadow-sm">
             Trade Pending
           </div>
         )}

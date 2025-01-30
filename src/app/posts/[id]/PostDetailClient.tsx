@@ -104,7 +104,7 @@ export default function PostDetailClient({ post, currentUserId }: PostDetailClie
       <div className="mt-6 bg-white p-6 rounded-xl shadow-md">
         <h2 className="text-lg md:text-xl font-semibold text-gray-800">Comments</h2>
         <textarea
-          className="w-full border border-gray-300 rounded-lg p-4 focus:outline-none focus:ring-2 focus:ring-blue-400 mt-4"
+          className="w-full border border-gray-300 rounded-lg p-4 focus:outline-hidden focus:ring-2 focus:ring-blue-400 mt-4"
           placeholder="Write a comment..."
         />
       </div>

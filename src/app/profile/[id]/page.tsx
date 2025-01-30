@@ -22,7 +22,7 @@ type PostLite = {
 
 function PostCardLite({ post }: { post: PostLite }) {
   return (
-    <div className="border rounded-lg shadow bg-white p-4 w-60 flex flex-col gap-2 relative">
+    <div className="border rounded-lg shadow-sm bg-white p-4 w-60 flex flex-col gap-2 relative">
       {post.status === "PENDING" && (
         <div className="absolute top-2 left-2 bg-pink-200 text-pink-600 px-2 py-1 rounded text-sm">
           Trade Pending
@@ -97,12 +97,12 @@ export default async function ProfilePage(props: ProfilePageProps) {
   return (
     <main className="relative w-full min-h-screen bg-gray-50">
       <div className="bg-teal-400 h-40 w-full relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-teal-400 to-cyan-400" />
+        <div className="absolute inset-0 bg-linear-to-r from-teal-400 to-cyan-400" />
       </div>
 
       <div className="max-w-4xl mx-auto px-4">
         <div className="relative bg-white rounded-xl shadow-lg p-6 -mt-16">
-          <div className="absolute -top-16 left-6 sm:left-10 w-32 h-32 sm:w-36 sm:h-36 rounded-full overflow-hidden border-4 border-white shadow">
+          <div className="absolute -top-16 left-6 sm:left-10 w-32 h-32 sm:w-36 sm:h-36 rounded-full overflow-hidden border-4 border-white shadow-sm">
             {profile.profileImage ? (
               <Image src={profile.profileImage} alt="Profile" fill className="object-cover" />
             ) : (

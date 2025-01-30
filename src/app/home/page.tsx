@@ -38,7 +38,7 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-gray-50 pt-24">
-      <div className="container max-w-screen-xl mx-auto px-6">
+      <div className="container max-w-(--breakpoint-xl) mx-auto px-6">
         <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-8 text-center">
           {searchQuery ? `Results for "${searchQuery}"` : "Your Feed"}
         </h1>

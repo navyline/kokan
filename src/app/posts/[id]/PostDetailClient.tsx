@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
-import { createChat } from "@/app/actions/chatActions";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import { FaCommentDots, FaMapMarkerAlt } from "react-icons/fa";
@@ -29,23 +28,13 @@ interface PostDetailClientProps {
 }
 
 export default function PostDetailClient({ post, currentUserId }: PostDetailClientProps) {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+
+  const [isPending] = useTransition();
 
   // เช็คว่า user ปัจจุบันคือเจ้าของโพสต์หรือไม่
   const isOwner = currentUserId === post.profileId;
 
-  const handleStartChat = async () => {
-    startTransition(async () => {
-      try {
-        // ส่งไป createChat (สมมติว่าเราใช้ post.profileId เป็น receiverId)
-        const chatId = await createChat(post.profileId);
-        router.push(`/chat/${chatId}`);
-      } catch (error) {
-        console.error("Failed to start chat:", error);
-      }
-    });
-  };
+
 
   return (
     <section className="p-4 md:p-8 bg-blue-50 min-h-screen">
@@ -86,8 +75,6 @@ export default function PostDetailClient({ post, currentUserId }: PostDetailClie
           {/* ปุ่ม Start Chat ถ้าไม่ใช่เจ้าของโพสต์ */}
           {!isOwner && (
             <button
-              onClick={handleStartChat}
-              disabled={isPending}
               className={`mt-6 w-full py-3 rounded-lg shadow-lg text-lg font-semibold flex items-center justify-center gap-2 transition ${
                 isPending
                   ? "bg-gray-400 cursor-not-allowed"

@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import Image from "next/image";
 import dynamic from "next/dynamic";

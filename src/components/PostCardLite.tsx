@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { FaHeart, FaCommentAlt } from "react-icons/fa";
 
 type PostLite = {
   id: string;
@@ -22,52 +23,49 @@ export default function PostCardLite({ post }: { post: PostLite }) {
   };
 
   return (
-    <div className="border rounded-lg shadow bg-white p-4 w-60 flex flex-col gap-2 relative">
+    <div className="border border-gray-200 rounded-xl shadow-md bg-white p-4 w-64 flex flex-col gap-3 transition-transform transform hover:scale-105 hover:shadow-lg">
       {/* รูปสินค้า พร้อม Overlay สำหรับ Status */}
-      <div className="relative w-full h-36 overflow-hidden rounded">
+      <div className="relative w-full h-40 overflow-hidden rounded-lg">
         {post.image && (
           <Link href={`/posts/${post.id}`}>
-            <Image
-              src={post.image}
-              alt={post.name}
-              fill
-              className="object-cover"
-            />
+            <Image src={post.image} alt={post.name} fill className="object-cover z-0" />
           </Link>
         )}
-        {/* สถานะ (ถ้ามี) อยู่บนรูป */}
+        {/* สถานะสินค้า */}
         {post.status === "PENDING" && (
-          <div
-            className="absolute top-0 left-0 bg-pink-200 text-pink-600 
-                        px-2 py-1 rounded-bl-md text-sm z-10"
-          >
+          <div className="absolute top-2 left-2 bg-pink-200 text-pink-700 px-2 py-1 z-10 rounded-md text-xs font-medium shadow">
             Trade Pending
           </div>
         )}
       </div>
 
       {/* ชื่อโพสต์ */}
-      <h2 className="text-sm font-semibold">
-        <Link href={`/posts/${post.id}`}>
-          <span className="hover:underline">{post.name}</span>
+      <h2 className="text-md font-semibold text-gray-800 truncate">
+        <Link href={`/posts/${post.id}`} className="hover:underline">
+          {post.name}
         </Link>
       </h2>
 
       {/* แสดง likesCount, commentsCount */}
-      <div className="flex items-center text-xs text-gray-500 gap-4">
-        <span>♥ {post.likesCount ?? 0}</span>
-        <span>💬 {post.commentsCount ?? 0}</span>
+      <div className="flex items-center text-xs text-gray-600 gap-3">
+        <div className="flex items-center gap-1">
+          <FaHeart className="text-red-400" />
+          <span>{post.likesCount ?? 0}</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <FaCommentAlt className="text-blue-400" />
+          <span>{post.commentsCount ?? 0}</span>
+        </div>
       </div>
 
-      {/* ปุ่มชอบ (Client Side) */}
+      {/* ปุ่ม Favorite */}
       <button
         onClick={handleFavoriteClick}
-        className={`mt-auto self-end py-1 px-3 rounded-full text-sm border 
-                    ${
-                      isFavorited
-                        ? "bg-red-50 text-red-500 border-red-200"
-                        : "bg-gray-50 text-gray-600 border-gray-200"
-                    }`}
+        className={`mt-auto py-2 px-4 rounded-lg text-sm font-medium transition ${
+          isFavorited
+            ? "bg-red-500 text-white hover:bg-red-600"
+            : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+        }`}
       >
         {isFavorited ? "Unfavorite" : "Favorite"}
       </button>

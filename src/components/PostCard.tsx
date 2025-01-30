@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
+import { FaHeart, FaRegHeart } from "react-icons/fa";
 
 type Post = {
   id: string;
@@ -24,45 +25,49 @@ export default function PostCard({ post }: { post: Post }) {
   };
 
   return (
-    <div className="relative border border-gray-200 rounded-lg shadow-md overflow-hidden bg-white transition hover:shadow-lg">
+    <div className="relative border border-gray-200 rounded-xl shadow-lg bg-white overflow-hidden transition-transform transform hover:scale-105 hover:shadow-xl">
+      {/* รูปสินค้า */}
       {post.image && (
-        <div className="relative group w-full h-48">
+        <div className="relative group w-full h-52">
           <Link href={`/posts/${post.id}`}>
             <Image src={post.image} alt={post.name} fill className="object-cover" />
           </Link>
+
+          {/* ปุ่ม Favorite */}
           <button
             onClick={handleFavoriteClick}
-            className={`absolute top-2 right-2 bg-white p-2 rounded-full shadow-md transition transform ${
-              isFavorited ? "text-red-500" : "text-gray-500"
-            } group-hover:opacity-100 opacity-0`}
+            className="absolute top-2 right-2 bg-white p-3 rounded-full shadow-md transition hover:bg-red-100"
             aria-label={isFavorited ? "Unfavorite" : "Favorite"}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5c0-2.58 2.42-5 5.5-5 1.74 0 
-                       3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3c3.08 0 
-                       5.5 2.42 5.5 5 0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-            </svg>
+            {isFavorited ? (
+              <FaHeart className="text-red-500 w-5 h-5" />
+            ) : (
+              <FaRegHeart className="text-gray-500 w-5 h-5" />
+            )}
           </button>
         </div>
       )}
 
+      {/* ข้อมูลสินค้า */}
       <div className="p-4">
-        <h2 className="text-md font-semibold text-gray-900 truncate">
+        <h2 className="text-lg font-semibold text-gray-900 truncate">
           <Link href={`/posts/${post.id}`}>
             <span className="hover:underline cursor-pointer">{post.name}</span>
           </Link>
         </h2>
+
+        {/* ข้อมูลเจ้าของโพสต์ */}
         {post.profile ? (
           <div className="flex items-center mt-3">
             <Image
               src={post.profile.profileImage || "/default-profile.png"}
               alt={`${post.profile.firstName} ${post.profile.lastName}`}
-              className="w-8 h-8 rounded-full border border-gray-300"
-              width={32}
-              height={32}
+              className="w-10 h-10 rounded-full border border-gray-300 shadow-sm"
+              width={40}
+              height={40}
             />
             <Link href={`/profile/${post.profile.id}`}>
-              <span className="ml-2 text-sm font-medium text-gray-700 hover:underline cursor-pointer">
+              <span className="ml-3 text-sm font-medium text-gray-700 hover:text-gray-900 transition">
                 {post.profile.firstName} {post.profile.lastName}
               </span>
             </Link>

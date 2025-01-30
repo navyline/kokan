@@ -20,6 +20,7 @@ const markerIcon = L.icon({
 });
 
 type Latlng = [number, number];
+
 type LocationMarkerProps = {
   position: Latlng | null;
   setPosition: (position: Latlng) => void;
@@ -30,48 +31,55 @@ function LocationMarker({ position, setPosition }: LocationMarkerProps) {
     click(e) {
       const newLocation: Latlng = [e.latlng.lat, e.latlng.lng];
       setPosition(newLocation);
-      map.flyTo(e.latlng);
+
+      // Check if the map instance is defined before calling flyTo
+      if (map) {
+        map.flyTo(e.latlng, map.getZoom());
+      }
     },
   });
 
-  return position === null ? null : (
+  return position ? (
     <Marker position={position} icon={markerIcon}>
-      <Popup>You are here</Popup>
+      <Popup>Your selected location</Popup>
     </Marker>
-  );
+  ) : null;
 }
 
 const MapLandmark = ({
-  location,
+  location = { lat: 13, lng: 100 }, // Default location if none provided
 }: {
   location?: { lat: number; lng: number };
 }) => {
-  const defaultLocation: Latlng = [13, 100];
   const [position, setPosition] = useState<Latlng | null>(null);
 
   return (
-    <>
+    <div>
       <h1 className="mt-4 font-semibold">Where are you?</h1>
 
+      {/* Hidden inputs to capture coordinates */}
       <input type="hidden" name="lat" value={position ? position[0] : ""} />
       <input type="hidden" name="lng" value={position ? position[1] : ""} />
 
       <MapContainer
         className="h-[50vh] rounded-lg z-0 relative mb-2"
-        center={location || defaultLocation}
+        center={[location.lat, location.lng]}
         zoom={7}
-        scrollWheelZoom={true}
+        scrollWheelZoom
       >
-        <Marker position={location || defaultLocation} icon={markerIcon}>
+        {/* Initial marker */}
+        <Marker position={[location.lat, location.lng]} icon={markerIcon}>
           <Popup>
-            A pretty CSS3 popup. <br /> Easily customizable.
+            Initial Location <br /> Drag or click to update.
           </Popup>
         </Marker>
 
+        {/* User-selected location marker */}
         <LocationMarker position={position} setPosition={setPosition} />
 
+        {/* Layers control */}
         <LayersControl>
-          <LayersControl.BaseLayer name="Openstreetmap" checked>
+          <LayersControl.BaseLayer name="OpenStreetMap" checked>
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -86,7 +94,7 @@ const MapLandmark = ({
           </LayersControl.BaseLayer>
         </LayersControl>
       </MapContainer>
-    </>
+    </div>
   );
 };
 

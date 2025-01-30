@@ -8,16 +8,16 @@ export default function CreatePost() {
   const router = useRouter();
 
   const categories = [
-    { value: "1a2b3c4d-5678-90ab-cdef-1234567890ab", label: "Home Appliances" },
-    { value: "2b3c4d5e-6789-01ab-cdef-2345678901bc", label: "Tools" },
-    { value: "3c4d5e6f-7890-12ab-cdef-3456789012cd", label: "Electronics" },
-    { value: "4d5e6f7g-8901-23ab-cdef-4567890123de", label: "Furniture" },
-    { value: "5e6f7g8h-9012-34ab-cdef-5678901234ef", label: "Books" },
-    { value: "6f7g8h9i-0123-45ab-cdef-6789012345fg", label: "Toys" },
-    { value: "7g8h9i0j-1234-56ab-cdef-7890123456gh", label: "Clothing" },
-    { value: "8h9i0j1k-2345-67ab-cdef-8901234567hi", label: "Sports Equipment" },
-    { value: "9i0j1k2l-3456-78ab-cdef-9012345678ij", label: "Other" },
-  ];
+    { value: "e20dcccd-d509-4d14-90a6-03f7f366ec56", label: "Home Appliances" },
+    { value: "4c87dec0-3e31-4947-9701-4f4e58b05c41", label: "Tools" },
+    { value: "145e254c-c39d-45a3-9d35-72b0ccae20a9", label: "Electronics" },
+    { value: "42e71209-ad6a-494d-b0c4-e2cbc2223fcb", label: "Furniture" },
+    { value: "765ed765-ebe4-41a3-9032-06e8928fcfb3", label: "Books" },
+    { value: "e29e786a-8fe7-41d5-9524-44010a1eeb5b", label: "Toys" },
+    { value: "eec05cbe-baf2-4fe5-bbc2-6694d42e66a1", label: "Clothing" },
+    { value: "6a8c3948-512b-407c-9497-cb6b0825b60f", label: "Sports Equipment" },
+    { value: "0a2760d2-15d3-4f44-9118-3495b9d8ef07", label: "Other" }
+];
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();

@@ -8,31 +8,33 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// ----------------- MODEL Profile -----------------
+// ====================================
+// ===========   MODELS   =============
+// ====================================
+
 model Profile {
-  id              String         @id @default(uuid())
-  clerkId         String         @unique
-  firstName       String
-  lastName        String
-  userName        String         @unique
-  email           String?        @unique
-  profileImage    String?
-  coverImage      String?        // รูป banner ด้านหลัง
-  bio             String?        // ข้อมูลแนะนำตัว
-  meetingSpots    String?        // ตำแหน่งนัด หรือข้อมูล meeting
-  interests       String?        // หรือ JSON ถ้าต้องการ (เปลี่ยน type เป็น Json)
-  badgeRank       Int?           // อาจใช้เป็นระดับ badge/เลเวล
-  // ตัวอย่างระบบ role สำหรับ admin
-  role            UserRole       @default(USER)
+  id           String   @id @default(uuid()) @db.Uuid
+  clerkId      String   @unique
+  firstName    String
+  lastName     String
+  userName     String   @unique
+  email        String?  @unique
+  profileImage String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  badgeRank    Int?
+  bio          String?
+  coverImage   String?
+  interests    String?
+  meetingSpots String?
+  role         UserRole @default(USER)
 
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-
-  // ความสัมพันธ์ต่าง ๆ
-  chatCreator     Chat[]         @relation("CreatorProfile")
-  chatReceiver    Chat[]         @relation("ReceiverProfile")
+  // Relations
+  isBlockedBy     Block[]        @relation("BlockedRelation")
+  blockedUsers    Block[]        @relation("BlockerRelation")
   favorites       Favorite[]
-  messageSender   Message[]      @relation("SenderProfile")
+  following       Follow[]       @relation("FollowerRelation")
+  followers       Follow[]       @relation("FollowingRelation")
   notifications   Notification[]
   posts           Post[]
   reviewsReceived Review[]       @relation("RevieweeProfile")
@@ -40,209 +42,187 @@ model Profile {
   tradeOfferBy    Trade[]        @relation("OfferByProfile")
   tradeOfferTo    Trade[]        @relation("OfferToProfile")
 
-  // Follow
-  followers Follow[] @relation("FollowingRelation") // คนอื่นติดตามเรา
-  following Follow[] @relation("FollowerRelation")  // เราติดตามคนอื่น
-
-  // Block
-  blockedUsers Block[] @relation("BlockerRelation") // เราบล็อกใครบ้าง
-  isBlockedBy  Block[] @relation("BlockedRelation") // ใครบล็อกเราบ้าง
+  chatCreator   Chat[]        @relation("CreatorProfile")
+  chatReceiver  Chat[]        @relation("ReceiverProfile")
+  messageSender Message[]     @relation("SenderProfile")
+  verification  Verification?
 
   @@index([userName, email])
 }
 
-// ----------------- MODEL Post -----------------
+model Verification {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @unique @db.Uuid
+  documentUrl String
+  status     VerificationStatus @default(PENDING)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
 model Post {
-  id          String     @id @default(uuid())
+  id          String   @id @default(uuid()) @db.Uuid
   name        String
   description String
   image       String?
-  tags        String?
   province    String
   lat         Float?
   lng         Float?
   price       Int
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @default(now())
-  profileId   String
-  categoryId  String?
-  condition   Condition
-  status      PostStatus @default(AVAILABLE)
-  views       Int        @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
 
-  // ความสัมพันธ์
-  favorites   Favorite[]
-  comments    Comment[]
-  category    Category?  @relation(fields: [categoryId], references: [id])
-  profile     Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  // FK -> Profile
+  profileId String  @db.Uuid
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
-  offeredBy   Trade[]    @relation("PostOffered")
-  wantedBy    Trade[]    @relation("PostWanted")
+  // FK -> Category? (optional)
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+
+  condition Condition
+  status    PostStatus @default(AVAILABLE)
+  views     Int        @default(0)
+  tags      String?
+
+  // Relations
+  comments  Comment[]
+  favorites Favorite[]
+  offeredBy Trade[]    @relation("PostOffered")
+  wantedBy  Trade[]    @relation("PostWanted")
 }
 
-// ----------------- MODEL Follow -----------------
 model Follow {
-  id          String   @id @default(uuid())
-  followerId  String
-  followingId String
+  id          String   @id @default(uuid()) @db.Uuid
+  followerId  String   @db.Uuid
+  followingId String   @db.Uuid
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime @default(now())
 
-  // ใครเป็นคนกด follow
   follower  Profile @relation("FollowerRelation", fields: [followerId], references: [id])
-  // ใครถูก follow
   following Profile @relation("FollowingRelation", fields: [followingId], references: [id])
 
   @@unique([followerId, followingId])
 }
 
-// ----------------- MODEL Block -----------------
 model Block {
-  id          String   @id @default(uuid())
-  blockerId   String
-  blockedId   String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(uuid()) @db.Uuid
+  blockerId String   @db.Uuid
+  blockedId String   @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
 
-  blocker Profile @relation("BlockerRelation", fields: [blockerId], references: [id])
   blocked Profile @relation("BlockedRelation", fields: [blockedId], references: [id])
+  blocker Profile @relation("BlockerRelation", fields: [blockerId], references: [id])
 
   @@unique([blockerId, blockedId])
 }
 
-// ----------------- MODEL Report -----------------
-// model Report {
-//   id                String   @id @default(uuid())
-//   reporterId        String
-//   reportedProfileId String?
-//   reportedPostId    String?
-//   reason            String
-//   createdAt         DateTime @default(now())
-//   updatedAt         DateTime @default(now())
-
-//   reporter Profile 
-//     @relation(
-//       "ReporterProfileRelation", 
-//       fields: [reporterId], 
-//       references: [id]
-//     )
-
-//   reportedProfile Profile? 
-//     @relation(
-//       "ReportedProfileRelation", 
-//       fields: [reportedProfileId], 
-//       references: [id]
-//     )
-
-//   reportedPost Post? 
-//     @relation(
-//       "ReportedPostRelation", 
-//       fields: [reportedPostId], 
-//       references: [id]
-//     )
-// }
-
-
-// ----------------- MODEL Comment -----------------
 model Comment {
-  id        String   @id @default(uuid())
+  id        String   @id @default(uuid()) @db.Uuid
   content   String
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  postId    String
+  updatedAt DateTime @default(now())
 
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  // FK -> Post
+  postId String @db.Uuid
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 }
 
-// ----------------- MODEL Favorite -----------------
 model Favorite {
-  id        String   @id @default(uuid())
+  id        String   @id @default(uuid()) @db.Uuid
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
-  profileId String
-  postId    String
 
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  // FKs
+  profileId String @db.Uuid
+  postId    String @db.Uuid
+
+  post    Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 }
 
-// ----------------- MODEL Chat -----------------
 model Chat {
-  id         String    @id @default(uuid())
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @default(now())
-  creatorId  String
-  receiverId String
+  id         String   @id @default(uuid()) @db.Uuid
+  creatorId  String   @db.Uuid
+  receiverId String   @db.Uuid
+  isGroup    Boolean  @default(false)
+  createdAt  DateTime @default(now())
 
-  creator    Profile   @relation("CreatorProfile", fields: [creatorId], references: [id])
-  receiver   Profile   @relation("ReceiverProfile", fields: [receiverId], references: [id])
-  messages   Message[]
+  creator  Profile @relation("CreatorProfile", fields: [creatorId], references: [id])
+  receiver Profile @relation("ReceiverProfile", fields: [receiverId], references: [id])
+
+  messages Message[]
 }
 
-// ----------------- MODEL Message -----------------
 model Message {
-  id        String   @id @default(uuid())
+  id        String   @id @default(uuid()) @db.Uuid
+  chatId    String   @db.Uuid
+  senderId  String   @db.Uuid
   content   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  chat   Chat    @relation(fields: [chatId], references: [id])
+  sender Profile @relation("SenderProfile", fields: [senderId], references: [id])
+}
+
+model Trade {
+  id        String      @id @default(uuid()) @db.Uuid
+  status    TradeStatus @default(PENDING)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @default(now())
+
+  // FKs (Profile)
+  offerById String @db.Uuid
+  offerToId String @db.Uuid
+
+  // FKs (Post)
+  postOfferedId String  @db.Uuid
+  postWantedId  String? @db.Uuid
+
+  offerBy     Profile @relation("OfferByProfile", fields: [offerById], references: [id])
+  offerTo     Profile @relation("OfferToProfile", fields: [offerToId], references: [id])
+  postOffered Post    @relation("PostOffered", fields: [postOfferedId], references: [id])
+  postWanted  Post?   @relation("PostWanted", fields: [postWantedId], references: [id])
+}
+
+model Review {
+  id        String   @id @default(uuid()) @db.Uuid
+  rating    Int
+  comment   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
-  chatId    String
-  senderId  String
 
-  chat      Chat     @relation(fields: [chatId], references: [id])
-  sender    Profile  @relation("SenderProfile", fields: [senderId], references: [id])
+  reviewerId String @db.Uuid
+  revieweeId String @db.Uuid
+
+  reviewee Profile @relation("RevieweeProfile", fields: [revieweeId], references: [id])
+  reviewer Profile @relation("ReviewerProfile", fields: [reviewerId], references: [id])
 }
 
-// ----------------- MODEL Trade -----------------
-model Trade {
-  id            String      @id @default(uuid())
-  status        TradeStatus @default(PENDING)
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @default(now())
-  offerById     String
-  postOfferedId String
-  offerToId     String
-  postWantedId  String?
-
-  offerBy       Profile     @relation("OfferByProfile", fields: [offerById], references: [id])
-  offerTo       Profile     @relation("OfferToProfile", fields: [offerToId], references: [id])
-  postOffered   Post        @relation("PostOffered", fields: [postOfferedId], references: [id])
-  postWanted    Post?       @relation("PostWanted", fields: [postWantedId], references: [id])
-}
-
-// ----------------- MODEL Review -----------------
-model Review {
-  id         String   @id @default(uuid())
-  rating     Int
-  comment    String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @default(now())
-  reviewerId String
-  revieweeId String
-
-  reviewee   Profile  @relation("RevieweeProfile", fields: [revieweeId], references: [id])
-  reviewer   Profile  @relation("ReviewerProfile", fields: [reviewerId], references: [id])
-}
-
-// ----------------- MODEL Category -----------------
 model Category {
-  id    String @id @default(uuid())
+  id    String @id @default(uuid()) @db.Uuid
   name  String @unique
   posts Post[]
 }
 
-// ----------------- MODEL Notification -----------------
 model Notification {
-  id         String   @id @default(uuid())
-  message    String
-  isRead     Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @default(now())
-  receiverId String
+  id        String   @id @default(uuid()) @db.Uuid
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
 
-  receiver   Profile  @relation(fields: [receiverId], references: [id])
+  receiverId String  @db.Uuid
+  receiver   Profile @relation(fields: [receiverId], references: [id])
 }
 
-// ----------------- ENUM PostStatus -----------------
+// ====================================
+// ========       ENUMS       =========
+// ====================================
+
 enum PostStatus {
   AVAILABLE
   PENDING_TRADE
@@ -250,7 +230,6 @@ enum PostStatus {
   CLOSED
 }
 
-// ----------------- ENUM TradeStatus -----------------
 enum TradeStatus {
   PENDING
   ACCEPTED
@@ -259,7 +238,6 @@ enum TradeStatus {
   COMPLETED
 }
 
-// ----------------- ENUM Condition -----------------
 enum Condition {
   NEW
   USED
@@ -267,9 +245,14 @@ enum Condition {
   REFURBISHED
 }
 
-// ----------------- ENUM UserRole (Optional for admin system) -----------------
 enum UserRole {
   USER
   ADMIN
   MODERATOR
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }

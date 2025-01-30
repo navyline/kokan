@@ -6,7 +6,7 @@ import { useUser, SignOutButton } from "@clerk/nextjs";
 import Search from "./Search";
 import Link from "next/link";
 import Image from "next/image";
-import { getLocalIdByClerkId } from "@/app/actions/getLocalId"; // Server Action
+import { getLocalIdByClerkId } from "@/app/actions/getLocalId";
 
 function Logo() {
   return (
@@ -54,6 +54,7 @@ function UserMenu() {
   const [localId, setLocalId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  // แยกการโหลด localId ให้ทำงานบน client
   useEffect(() => {
     if (!user) {
       setLocalId(null);
@@ -100,9 +101,7 @@ function UserMenu() {
       </button>
 
       {menuOpen && (
-        <div
-          className="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-md py-2 border border-gray-100 z-50"
-        >
+        <div className="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-md py-2 border border-gray-100 z-50">
           {isPending && <p className="px-4 py-2 text-gray-500">Loading...</p>}
           {localId ? (
             <Link

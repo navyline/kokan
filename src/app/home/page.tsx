@@ -28,7 +28,7 @@ export default function HomePage() {
   useEffect(() => {
     const fetchPosts = async () => {
       setLoading(true);
-      const postsData = await fetchPostsAction(searchQuery); // ส่งคำค้นหาไปยังฟังก์ชันดึงข้อมูล
+      const postsData = await fetchPostsAction(); // ส่งคำค้นหาไปยังฟังก์ชันดึงข้อมูล
       setPosts(postsData);
       setLoading(false);
     };

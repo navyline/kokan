@@ -11,7 +11,7 @@ const Search = () => {
   const [search, setSearch] = useState(searchParams.get("search") || "");
 
   const handleSearch = useDebouncedCallback((value: string) => {
-    const params = new URLSearchParams(searchParams as any);
+    const params = new URLSearchParams(searchParams.toString());
     if (value) {
       params.set("search", value);
     } else {

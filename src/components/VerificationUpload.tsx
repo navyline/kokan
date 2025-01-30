@@ -17,7 +17,7 @@ export default function VerificationUpload() {
       await uploadVerification(user.id, file);
       setStatus("Uploaded successfully! Pending approval.");
     } catch (error) {
-      setStatus("Upload failed. Please try again.");
+      setStatus(`Upload failed: ${error instanceof Error ? error.message : 'Please try again.'}`);
     }
   };
 

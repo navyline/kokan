@@ -1,49 +1,30 @@
-// rafce
 "use client";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Share2 } from "lucide-react";
-import { Button } from "../ui/button";
-import {
-  TwitterShareButton,
-  FacebookShareButton,
-  FacebookIcon,
-  TwitterIcon,
-} from "react-share";
 
-const ShareButton = ({
-  postId,
-  name,
-}: {
+import { useState } from "react";
+import { FaShareAlt, FaCheck } from "react-icons/fa";
+
+interface ShareButtonProps {
   postId: string;
   name: string;
-}) => {
-  const url = process.env.NEXT_PUBLIC_WEBSITE_URL
-  const shareLink = `${url}/post/${postId}`;
+}
+
+export default function ShareButton({ postId }: ShareButtonProps) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyLink = async () => {
+    const url = `${window.location.origin}/posts/${postId}`;
+    await navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button variant="outline">
-          <Share2 />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent
-        side="top"
-        align="end"
-        className="flex w-full gap-x-2 items-center"
-      >
-        <FacebookShareButton url={shareLink} name={name}>
-          <FacebookIcon size="36px" className="rounded-md" />
-        </FacebookShareButton>
-        <TwitterShareButton url={shareLink} name={name}>
-          <TwitterIcon size={"36px"} className="rounded-md" />
-        </TwitterShareButton>
-      </PopoverContent>
-    </Popover>
+    <button
+      onClick={handleCopyLink}
+      className="flex items-center gap-2 text-gray-600 hover:text-blue-500 transition"
+    >
+      {copied ? <FaCheck className="text-green-500" /> : <FaShareAlt />}
+      <span className="hidden md:inline">{copied ? "Copied!" : "Share"}</span>
+    </button>
   );
-};
-export default ShareButton;
+}

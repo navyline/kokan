@@ -1,37 +1,37 @@
 "use client";
 
 import { useState } from "react";
+import { FaHeart, FaRegHeart } from "react-icons/fa";
 
 interface FavoriteToggleButtonProps {
   postId: string;
 }
 
-const FavoriteToggleButton: React.FC<FavoriteToggleButtonProps> = () => {
-  const [isFavorite, setIsFavorite] = useState(false);
+export default function FavoriteToggleButton({ postId }: FavoriteToggleButtonProps) {
+  const [isFavorited, setIsFavorited] = useState(false);
 
-  const toggleFavorite = async () => {
-    setIsFavorite(!isFavorite);
-    // เพิ่มโค้ดเรียก API สำหรับ toggle favorite
+  const handleToggleFavorite = async () => {
+    setIsFavorited(!isFavorited);
+
+    try {
+      await fetch("/api/favorites", {
+        method: "POST",
+        body: JSON.stringify({ postId, favorite: !isFavorited }),
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch (error) {
+      console.error("Error updating favorite:", error);
+      setIsFavorited(!isFavorited); // Undo on error
+    }
   };
 
   return (
-    <button onClick={toggleFavorite} className="relative">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className={`h-6 w-6 ${isFavorite ? "text-pink-500" : "text-gray-600"}`}
-        fill={isFavorite ? "currentColor" : "none"}
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M5 21l7-5 7 5V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16z"
-        />
-      </svg>
+    <button
+      onClick={handleToggleFavorite}
+      className="flex items-center gap-2 text-gray-600 hover:text-red-500 transition"
+    >
+      {isFavorited ? <FaHeart className="text-red-500" /> : <FaRegHeart />}
+      <span className="hidden md:inline">{isFavorited ? "Unfavorite" : "Favorite"}</span>
     </button>
   );
-};
-
-export default FavoriteToggleButton;
+}

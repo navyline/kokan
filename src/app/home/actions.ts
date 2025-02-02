@@ -1,4 +1,4 @@
-"use server"
+"use server";
 
 import db from "@/utils/db";
 
@@ -12,11 +12,17 @@ type Post = {
     lastName: string;
     profileImage?: string;
   };
+  category: {
+    name: string;
+  };
 };
 
-export async function fetchPostsAction(): Promise<Post[]> {
+export async function fetchPostsAction(
+  categoryId: string | null = null
+): Promise<Post[]> {
   try {
     const posts = await db.post.findMany({
+      where: categoryId ? { categoryId } : {},
       include: {
         profile: {
           select: {
@@ -32,6 +38,9 @@ export async function fetchPostsAction(): Promise<Post[]> {
           },
         },
       },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
 
     return posts.map((post) => ({
@@ -44,9 +53,29 @@ export async function fetchPostsAction(): Promise<Post[]> {
         lastName: post.profile.lastName,
         profileImage: post.profile.profileImage || undefined,
       },
+      category: {
+        name: post.category?.name || "Uncategorized",
+      },
     }));
   } catch (error) {
-    console.error("Error fetching posts:", error);
+    console.error("❌ Error fetching posts:", error);
     throw new Error("Failed to fetch posts");
+  }
+}
+
+// ดึงหมวดหมู่จาก Database
+export async function fetchCategories() {
+  try {
+    const categories = await db.category.findMany({
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
+    return categories;
+  } catch (error) {
+    console.error("❌ Error fetching categories:", error);
+    return [];
   }
 }

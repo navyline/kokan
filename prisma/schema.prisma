@@ -8,61 +8,40 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// ====================================
-// ===========   MODELS   =============
-// ====================================
-
 model Profile {
-  id           String   @id @default(uuid()) @db.Uuid
-  clerkId      String   @unique
+  id           String        @id @default(uuid()) @db.Uuid
+  clerkId      String        @unique
   firstName    String
   lastName     String
-  userName     String   @unique
-  email        String?  @unique
+  userName     String        @unique
+  email        String?       @unique
   profileImage String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
   badgeRank    Int?
   bio          String?
   coverImage   String?
   interests    String?
   meetingSpots String?
-  role         UserRole @default(USER)
-
-  // Relations
-  isBlockedBy     Block[]        @relation("BlockedRelation")
-  blockedUsers    Block[]        @relation("BlockerRelation")
-  favorites       Favorite[]
-  following       Follow[]       @relation("FollowerRelation")
-  followers       Follow[]       @relation("FollowingRelation")
-  notifications   Notification[]
-  posts           Post[]
-  reviewsReceived Review[]       @relation("RevieweeProfile")
-  reviewsWritten  Review[]       @relation("ReviewerProfile")
-  tradeOfferBy    Trade[]        @relation("OfferByProfile")
-  tradeOfferTo    Trade[]        @relation("OfferToProfile")
-
-  chatCreator   Chat[]        @relation("CreatorProfile")
-  chatReceiver  Chat[]        @relation("ReceiverProfile")
-  messageSender Message[]     @relation("SenderProfile")
-  verification  Verification?
+  role         UserRole      @default(USER)
+  posts        Post[]
+  verification Verification?
 
   @@index([userName, email])
 }
 
 model Verification {
-  id         String   @id @default(uuid()) @db.Uuid
-  userId     String   @unique @db.Uuid
+  userId      String             @unique @db.Uuid
   documentUrl String
-  status     VerificationStatus @default(PENDING)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  user Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status      VerificationStatus @default(PENDING)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  id          String             @id @default(uuid()) @db.Uuid
+  user        Profile            @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Post {
-  id          String   @id @default(uuid()) @db.Uuid
+  id          String     @id @default(uuid()) @db.Uuid
   name        String
   description String
   image       String?
@@ -70,27 +49,15 @@ model Post {
   lat         Float?
   lng         Float?
   price       Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now())
-
-  // FK -> Profile
-  profileId String  @db.Uuid
-  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-
-  // FK -> Category? (optional)
-  categoryId String?
-  category   Category? @relation(fields: [categoryId], references: [id])
-
-  condition Condition
-  status    PostStatus @default(AVAILABLE)
-  views     Int        @default(0)
-  tags      String?
-
-  // Relations
-  comments  Comment[]
-  favorites Favorite[]
-  offeredBy Trade[]    @relation("PostOffered")
-  wantedBy  Trade[]    @relation("PostWanted")
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @default(now())
+  profileId   String     @db.Uuid
+  categoryId  String?
+  condition   Condition
+  status      PostStatus @default(AVAILABLE)
+  views       Int        @default(0)
+  tags        String?
+  profile     Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
 }
 
 model Follow {
@@ -99,9 +66,6 @@ model Follow {
   followingId String   @db.Uuid
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now())
-
-  follower  Profile @relation("FollowerRelation", fields: [followerId], references: [id])
-  following Profile @relation("FollowingRelation", fields: [followingId], references: [id])
 
   @@unique([followerId, followingId])
 }
@@ -113,9 +77,6 @@ model Block {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 
-  blocked Profile @relation("BlockedRelation", fields: [blockedId], references: [id])
-  blocker Profile @relation("BlockerRelation", fields: [blockerId], references: [id])
-
   @@unique([blockerId, blockedId])
 }
 
@@ -124,23 +85,16 @@ model Comment {
   content   String
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
-
-  // FK -> Post
-  postId String @db.Uuid
-  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String   @db.Uuid
+  profileId String   @db.Uuid
 }
 
 model Favorite {
   id        String   @id @default(uuid()) @db.Uuid
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
-
-  // FKs
-  profileId String @db.Uuid
-  postId    String @db.Uuid
-
-  post    Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
-  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId String   @db.Uuid
+  postId    String   @db.Uuid
 }
 
 model Chat {
@@ -149,11 +103,6 @@ model Chat {
   receiverId String   @db.Uuid
   isGroup    Boolean  @default(false)
   createdAt  DateTime @default(now())
-
-  creator  Profile @relation("CreatorProfile", fields: [creatorId], references: [id])
-  receiver Profile @relation("ReceiverProfile", fields: [receiverId], references: [id])
-
-  messages Message[]
 }
 
 model Message {
@@ -163,65 +112,42 @@ model Message {
   content   String
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
-
-  chat   Chat    @relation(fields: [chatId], references: [id])
-  sender Profile @relation("SenderProfile", fields: [senderId], references: [id])
 }
 
 model Trade {
-  id        String      @id @default(uuid()) @db.Uuid
-  status    TradeStatus @default(PENDING)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @default(now())
-
-  // FKs (Profile)
-  offerById String @db.Uuid
-  offerToId String @db.Uuid
-
-  // FKs (Post)
-  postOfferedId String  @db.Uuid
-  postWantedId  String? @db.Uuid
-
-  offerBy     Profile @relation("OfferByProfile", fields: [offerById], references: [id])
-  offerTo     Profile @relation("OfferToProfile", fields: [offerToId], references: [id])
-  postOffered Post    @relation("PostOffered", fields: [postOfferedId], references: [id])
-  postWanted  Post?   @relation("PostWanted", fields: [postWantedId], references: [id])
+  id            String      @id @default(uuid()) @db.Uuid
+  status        TradeStatus @default(PENDING)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @default(now())
+  offerById     String      @db.Uuid
+  offerToId     String      @db.Uuid
+  postOfferedId String      @db.Uuid
+  postWantedId  String?     @db.Uuid
 }
 
 model Review {
-  id        String   @id @default(uuid()) @db.Uuid
-  rating    Int
-  comment   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
-
-  reviewerId String @db.Uuid
-  revieweeId String @db.Uuid
-
-  reviewee Profile @relation("RevieweeProfile", fields: [revieweeId], references: [id])
-  reviewer Profile @relation("ReviewerProfile", fields: [reviewerId], references: [id])
+  id         String   @id @default(uuid()) @db.Uuid
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now())
+  reviewerId String   @db.Uuid
+  revieweeId String   @db.Uuid
 }
 
 model Category {
-  id    String @id @default(uuid()) @db.Uuid
-  name  String @unique
-  posts Post[]
+  id   String @id @default(uuid()) @db.Uuid
+  name String @unique
 }
 
 model Notification {
-  id        String   @id @default(uuid()) @db.Uuid
-  message   String
-  isRead    Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
-
-  receiverId String  @db.Uuid
-  receiver   Profile @relation(fields: [receiverId], references: [id])
+  id         String   @id @default(uuid()) @db.Uuid
+  message    String
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now())
+  receiverId String   @db.Uuid
 }
-
-// ====================================
-// ========       ENUMS       =========
-// ====================================
 
 enum PostStatus {
   AVAILABLE

@@ -1,19 +1,24 @@
 "use server";
 
 import db from "@/utils/db";
+import { currentUser } from "@clerk/nextjs/server";
 
 /**
  * ดึงข้อมูลโปรไฟล์จากฐานข้อมูล
  */
-export async function getProfileById(profileId: string) {
-  return db.profile.findUnique({
-    where: { id: profileId },
+export async function getProfileById(id: string) {
+  return await db.profile.findUnique({
+    where: { id },
     include: {
-      posts: true,
+      posts: {
+        include: {
+          favorites: true,
+          comments: true,
+        },
+      },
       followers: true,
       following: true,
       blockedUsers: true,
-      isBlockedBy: true,
     },
   });
 }
@@ -59,43 +64,61 @@ export async function unfollowUser(currentUserProfileId: string, targetProfileId
   return true;
 }
 
-/**
- * บล็อกผู้ใช้งาน
- */
-export async function blockUser(currentUserProfileId: string, targetProfileId: string) {
-  const existing = await db.block.findUnique({
-    where: {
-      blockerId_blockedId: {
-        blockerId: currentUserProfileId,
-        blockedId: targetProfileId,
-      },
-    },
-  });
 
-  if (!existing) {
-    await db.block.create({
-      data: {
-        blockerId: currentUserProfileId,
-        blockedId: targetProfileId,
-      },
-    });
+/**
+ * ฟังก์ชันสร้างแชทระหว่างผู้ใช้
+ * หากมีแชทอยู่แล้วจะส่ง URL ของแชทนั้นกลับ
+ */
+export const startChat = async (receiverId: string) => {
+  "use server";
+
+  const user = await currentUser();
+  if (!user) {
+    console.error("❌ User not logged in");
+    return null;
   }
 
-  return true;
-}
+  // ดึงข้อมูลโปรไฟล์ของผู้ใช้ปัจจุบันจากฐานข้อมูล
+  const senderProfile = await db.profile.findUnique({ where: { clerkId: user.id } });
+  if (!senderProfile) {
+    console.error("❌ Sender profile not found");
+    return null;
+  }
 
-/**
- * ยกเลิก Block ผู้ใช้งาน
- */
-export async function unblockUser(currentUserProfileId: string, targetProfileId: string) {
-  await db.block.delete({
-    where: {
-      blockerId_blockedId: {
-        blockerId: currentUserProfileId,
-        blockedId: targetProfileId,
+  // ห้ามให้ผู้ใช้แชทกับตัวเอง
+  if (senderProfile.id === receiverId) {
+    console.error("❌ Cannot chat with yourself");
+    return null;
+  }
+
+  try {
+    // ตรวจสอบว่ามีแชทอยู่แล้วหรือไม่
+    let chat = await db.chat.findFirst({
+      where: {
+        OR: [
+          { creatorId: senderProfile.id, receiverId },
+          { creatorId: receiverId, receiverId: senderProfile.id },
+        ],
       },
-    },
-  });
+    });
 
-  return true;
-}
+    // ถ้าไม่มีแชทให้สร้างใหม่
+    if (!chat) {
+      console.log("🛠 Creating new chat...");
+      chat = await db.chat.create({
+        data: {
+          creatorId: senderProfile.id,
+          receiverId,
+          isGroup: false,
+          createdAt: new Date(),
+        },
+      });
+    }
+
+    // ส่ง URL ของหน้าที่แสดงแชท (สมมติว่าเราใช้ dynamic route /chat/[chatId])
+    return `/chat/${chat.id}`;
+  } catch (error) {
+    console.error("❌ Error starting chat:", error);
+    return null;
+  }
+};

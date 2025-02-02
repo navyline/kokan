@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import PostCard from "@/components/PostCard";
 import { fetchPostsAction } from "./actions";
+import { fetchCategories } from "./actions"; // ดึง Category
+import { ChevronDown } from "lucide-react";
 
-// กำหนดชนิดข้อมูลของโพสต์
 type Post = {
   id: string;
   name: string;
@@ -16,34 +17,66 @@ type Post = {
     lastName: string;
     profileImage?: string;
   };
+  category: {
+    name: string;
+  };
 };
 
 export default function HomePage() {
   const [posts, setPosts] = useState<Post[]>([]);
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>(
+    []
+  );
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const searchParams = useSearchParams();
-  const searchQuery = searchParams.get("search") || ""; // รับค่าการค้นหาจาก URL
+  const searchQuery = searchParams.get("search") || "";
 
   useEffect(() => {
     const fetchPosts = async () => {
       setLoading(true);
-      const postsData = await fetchPostsAction(); // ส่งคำค้นหาไปยังฟังก์ชันดึงข้อมูล
+      const postsData = await fetchPostsAction(selectedCategory);
       setPosts(postsData);
       setLoading(false);
     };
 
+    const fetchCategoriesData = async () => {
+      const categoriesData = await fetchCategories();
+      setCategories(categoriesData);
+    };
+
     fetchPosts();
-  }, [searchQuery]); // รีโหลดเมื่อค่า searchQuery เปลี่ยน
+    fetchCategoriesData();
+  }, [searchQuery, selectedCategory]);
 
   return (
     <main className="min-h-screen bg-gray-50 pt-24">
-      <div className="container max-w-(--breakpoint-xl) mx-auto px-6">
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-8 text-center">
-          {searchQuery ? `Results for "${searchQuery}"` : "Your Feed"}
+      <div className="container mx-auto px-6 max-w-7xl">
+        <h1 className="text-4xl font-bold text-gray-800 mb-6 text-center">
+          {searchQuery ? `🔍 Results for "${searchQuery}"` : "🔥 Trending Posts"}
         </h1>
 
-        {/* แสดง Skeleton Loading เมื่อกำลังโหลด */}
+        {/* Dropdown เลือก Category */}
+        <div className="flex justify-center mb-6">
+          <div className="relative">
+            <select
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              value={selectedCategory || ""}
+              className="appearance-none bg-white border border-gray-300 text-gray-700 py-2 px-4 pr-10 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="">📌 All Categories</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="absolute top-2 right-3 text-gray-500" />
+          </div>
+        </div>
+
+        {/* แสดง Skeleton Loading */}
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {[...Array(8)].map((_, index) => (
@@ -56,7 +89,9 @@ export default function HomePage() {
               posts.map((post) => <PostCard key={post.id} post={post} />)
             ) : (
               <p className="text-gray-500 text-center col-span-full">
-                {searchQuery ? "No results found 😕" : "No posts available"}
+                {searchQuery
+                  ? "❌ No results found 😕"
+                  : "⚠️ No posts available"}
               </p>
             )}
           </div>

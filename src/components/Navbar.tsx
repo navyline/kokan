@@ -1,17 +1,17 @@
 "use client";
 
 import { useState, useEffect, useTransition } from "react";
-import { Bell, PlusCircle, LogIn } from "lucide-react";
+import { Bell, PlusCircle, LogIn, MessageCircle } from "lucide-react";
 import { useUser, SignOutButton } from "@clerk/nextjs";
-import Search from "./Search";
 import Link from "next/link";
 import Image from "next/image";
+import Search from "./Search";
 import { getLocalIdByClerkId } from "@/app/actions/getLocalId";
 
 function Logo() {
   return (
     <Link href="/" className="flex items-center space-x-2">
-      <div className="w-10 h-10 bg-linear-to-r from-teal-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
+      <div className="w-10 h-10 bg-gradient-to-r from-teal-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
         KO
       </div>
       <span className="text-xl font-bold text-gray-800">Kokan</span>
@@ -47,6 +47,17 @@ function Notification() {
   );
 }
 
+function ChatButton() {
+  return (
+    <Link
+      href="/chat"
+      className="p-3 text-gray-600 hover:text-teal-500 transition flex items-center justify-center"
+    >
+      <MessageCircle className="h-6 w-6" />
+    </Link>
+  );
+}
+
 function UserMenu() {
   const { user } = useUser();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -54,7 +65,6 @@ function UserMenu() {
   const [localId, setLocalId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  // แยกการโหลด localId ให้ทำงานบน client
   useEffect(() => {
     if (!user) {
       setLocalId(null);
@@ -149,11 +159,12 @@ export default function Navbar() {
   return (
     <nav className="bg-white shadow-md px-6 py-4 flex items-center justify-between">
       <Logo />
-      <div className="grow mx-4">
+      <div className="flex-1 mx-4 flex justify-center">
         <Search />
       </div>
       <div className="flex items-center space-x-4">
         <CreatePostButton />
+        <ChatButton />
         <Notification />
         <UserMenu />
       </div>

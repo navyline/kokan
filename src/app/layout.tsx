@@ -3,6 +3,7 @@ import Navbar from "@/components/Navbar";
 import ProgressBarProvider from "@/components/ProgressBarProvider";
 import { Suspense } from "react";
 import "./globals.css";
+import Footer from "@/components/Footer";
 
 export const metadata = {
   title: "Kokan",
@@ -21,6 +22,7 @@ export default function RootLayout({
             <ProgressBarProvider>
               <Navbar />
               {children}
+              <Footer />
             </ProgressBarProvider>
           </Suspense>
         </ClerkProvider>

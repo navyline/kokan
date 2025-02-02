@@ -4,100 +4,59 @@ import Image from "next/image";
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import db from "@/utils/db";
-import { getProfileById, followUser, unfollowUser, blockUser, unblockUser } from "./actions";
+import { getProfileById, followUser, unfollowUser } from "./actions";
 import { User } from "lucide-react";
-import type { Profile } from "@prisma/client";
+import PostCardLite from "@/components/posts/PostCardLite";
+import StartChatButton from "@/components/chat/StartChatButton";
 
 export const dynamic = "force-dynamic";
 
-// ---- PostCardLite: ไม่แสดงข้อมูลโปรไฟล์, แสดงเฉพาะโพสต์ (like/comment/status) ----
-type PostLite = {
+type ProfilePageProps = {
+  params: Promise<{ id: string }>;
+};
+
+interface Post {
   id: string;
   name: string;
   image?: string | null;
-  likesCount?: number;
-  commentsCount?: number;
-  status?: string;
-};
-
-function PostCardLite({ post }: { post: PostLite }) {
-  return (
-    <div className="border rounded-lg shadow-sm bg-white p-4 w-60 flex flex-col gap-2 relative">
-      {post.status === "PENDING" && (
-        <div className="absolute top-2 left-2 bg-pink-200 text-pink-600 px-2 py-1 rounded text-sm">
-          Trade Pending
-        </div>
-      )}
-      {post.image && (
-        <div className="relative w-full h-36 overflow-hidden rounded">
-          <Link href={`/posts/${post.id}`}>
-            <Image src={post.image} alt={post.name} fill className="object-cover" />
-          </Link>
-        </div>
-      )}
-      <h2 className="text-sm font-semibold">
-        <Link href={`/posts/${post.id}`}>
-          <span className="hover:underline">{post.name}</span>
-        </Link>
-      </h2>
-      <div className="flex items-center text-xs text-gray-500 gap-4">
-        <span>♥ {post.likesCount ?? 0}</span>
-        <span>💬 {post.commentsCount ?? 0}</span>
-      </div>
-    </div>
-  );
+  favorites?: { id: string }[];
+  comments?: { id: string }[];
+  status: string;
 }
 
-// ---------------------- หน้าโปรไฟล์หลัก ----------------------
-type ProfilePageProps = {
-  params: Promise<{ id: string }>; // รองรับ Promise ของ params
-};
-
-export default async function ProfilePage(props: ProfilePageProps) {
-  const { id } = await props.params; // แก้ไขเพื่อรอการ resolved ของ params
-
-  const user = await currentUser();
+export default async function ProfilePage({ params }: ProfilePageProps) {
+  const { id } = await params;
   const profile = await getProfileById(id);
+
   if (!profile) notFound();
 
-  let currentProfile: Profile | null = null;
-  if (user) {
-    currentProfile = await db.profile.findUnique({ where: { clerkId: user.id } });
-  }
+  // ✅ ตรวจสอบผู้ใช้ที่ล็อกอิน
+  const user = await currentUser();
+  const currentProfile = user ? await db.profile.findUnique({ where: { clerkId: user.id } }) : null;
+  const currentUserId = currentProfile?.id;
 
-  const isOwner = currentProfile?.id === profile.id;
-  const isFollowing = profile.followers.some((f) => f.followerId === currentProfile?.id);
-  const heBlockMe = profile.blockedUsers.some((b) => b.blockedId === currentProfile?.id);
+  // ✅ ตรวจสอบว่าเป็นเจ้าของโปรไฟล์หรือไม่
+  const isOwner = currentUserId === profile.id;
+  const isFollowing = profile.followers.some((f: { followerId: string }) => f.followerId === currentUserId);
 
   async function handleFollow() {
     "use server";
-    if (!currentProfile) throw new Error("You need to login first");
-    await followUser(currentProfile.id, id);
+    if (!currentUserId) throw new Error("You need to login first");
+    await followUser(currentUserId, id);
     revalidatePath(`/profile/${id}`);
   }
+
   async function handleUnfollow() {
     "use server";
-    if (!currentProfile) throw new Error("You need to login first");
-    await unfollowUser(currentProfile.id, id);
-    revalidatePath(`/profile/${id}`);
-  }
-  async function handleBlock() {
-    "use server";
-    if (!currentProfile) throw new Error("You need to login first");
-    await blockUser(currentProfile.id, id);
-    revalidatePath(`/profile/${id}`);
-  }
-  async function handleUnblock() {
-    "use server";
-    if (!currentProfile) throw new Error("You need to login first");
-    await unblockUser(currentProfile.id, id);
+    if (!currentUserId) throw new Error("You need to login first");
+    await unfollowUser(currentUserId, id);
     revalidatePath(`/profile/${id}`);
   }
 
   return (
     <main className="relative w-full min-h-screen bg-gray-50">
       <div className="bg-teal-400 h-40 w-full relative overflow-hidden">
-        <div className="absolute inset-0 bg-linear-to-r from-teal-400 to-cyan-400" />
+        <div className="absolute inset-0 bg-gradient-to-r from-teal-400 to-cyan-400" />
       </div>
 
       <div className="max-w-4xl mx-auto px-4">
@@ -113,61 +72,41 @@ export default async function ProfilePage(props: ProfilePageProps) {
           </div>
 
           <div className="ml-36 sm:ml-44 mt-2">
-            <h1 className="text-2xl font-bold text-gray-800">
-              {profile.firstName} {profile.lastName}
-            </h1>
+            <h1 className="text-2xl font-bold text-gray-800">{profile.firstName} {profile.lastName}</h1>
             <p className="text-gray-600 -mt-1">@{profile.userName}</p>
             <p className="mt-3 text-sm text-gray-700">{profile.bio || "Bio"}</p>
 
             <div className="flex items-center gap-4 mt-3 text-sm">
-              <div>
-                <span className="font-semibold">{profile.followers.length}</span> followers
-              </div>
-              <div>
-                <span className="font-semibold">{profile.following.length}</span> following
-              </div>
-              {profile.badgeRank && (
-                <div className="bg-yellow-300 text-yellow-800 px-2 py-1 rounded">
-                  Rank: {profile.badgeRank}
-                </div>
-              )}
+              <div><span className="font-semibold">{profile.followers.length}</span> followers</div>
+              <div><span className="font-semibold">{profile.following.length}</span> following</div>
+              {profile.badgeRank && <div className="bg-yellow-300 text-yellow-800 px-2 py-1 rounded">Rank: {profile.badgeRank}</div>}
             </div>
 
-            {!isOwner && currentProfile && (
+            {/* ✅ ปุ่มติดตาม / ยกเลิกติดตาม + ปุ่มแชท */}
+            {!isOwner && currentUserId && (
               <div className="mt-4 flex items-center gap-2">
                 {!isFollowing ? (
                   <form action={handleFollow}>
-                    <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded">
+                    <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded cursor-pointer hover:bg-blue-700 transition">
                       Follow
                     </button>
                   </form>
                 ) : (
                   <form action={handleUnfollow}>
-                    <button type="submit" className="px-4 py-2 bg-gray-200 text-gray-800 rounded">
+                    <button type="submit" className="px-4 py-2 bg-gray-200 text-gray-800 rounded cursor-pointer hover:bg-gray-300 transition">
                       Unfollow
                     </button>
                   </form>
                 )}
 
-                {!heBlockMe ? (
-                  <form action={handleBlock}>
-                    <button type="submit" className="px-4 py-2 bg-red-600 text-white rounded">
-                      Block
-                    </button>
-                  </form>
-                ) : (
-                  <form action={handleUnblock}>
-                    <button type="submit" className="px-4 py-2 bg-gray-200 text-gray-800 rounded">
-                      Unblock
-                    </button>
-                  </form>
-                )}
+                {/* ✅ ใช้ปุ่ม StartChatButton ที่เป็น Client Component */}
+                <StartChatButton receiverId={profile.id} />
               </div>
             )}
 
             {isOwner && (
               <div className="mt-4">
-                <Link href={`/profile/${id}/edit`} className="px-4 py-2 bg-purple-600 text-white rounded">
+                <Link href={`/profile/${id}/edit`} className="px-4 py-2 bg-purple-600 text-white rounded cursor-pointer hover:bg-purple-700 transition">
                   แก้ไขโปรไฟล์
                 </Link>
               </div>
@@ -177,23 +116,21 @@ export default async function ProfilePage(props: ProfilePageProps) {
       </div>
 
       <div className="max-w-4xl mx-auto mt-4 px-4">
-        <h2 className="text-lg font-semibold mb-2">
-          Posts ของ {profile.userName}
-        </h2>
+        <h2 className="text-lg font-semibold mb-2">Posts ของ {profile.userName}</h2>
         <div className="flex gap-4 flex-wrap">
           {profile.posts.length === 0 ? (
             <p className="text-gray-500">ยังไม่มีโพสต์</p>
           ) : (
-            profile.posts.map((p) => (
+            profile.posts.map((p: Post) => (
               <PostCardLite
                 key={p.id}
                 post={{
                   id: p.id,
                   name: p.name,
                   image: p.image,
-                  likesCount: 5, 
-                  commentsCount: 2, 
-                  status: "PENDING", 
+                  likesCount: p.favorites?.length || 0,
+                  commentsCount: p.comments?.length || 0,
+                  status: p.status,
                 }}
               />
             ))

@@ -4,21 +4,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
-
-type Post = {
-  id: string;
-  name: string;
-  image?: string | null;
-  profile?: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    profileImage?: string | null;
-  };
-};
+import { Post } from "@/utils/types"; // ✅ ใช้ Type จากไฟล์กลาง
 
 export default function PostCard({ post }: { post: Post }) {
   const [isFavorited, setIsFavorited] = useState(false);
+
   const handleFavoriteClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     setIsFavorited(!isFavorited);
@@ -27,26 +17,29 @@ export default function PostCard({ post }: { post: Post }) {
   return (
     <div className="relative border border-gray-200 rounded-xl shadow-lg bg-white overflow-hidden transition-transform transform hover:scale-105 hover:shadow-xl">
       {/* รูปสินค้า */}
-      {post.image && (
-        <div className="relative group w-full h-52">
-          <Link href={`/posts/${post.id}`}>
-            <Image src={post.image} alt={post.name} fill className="object-cover" />
-          </Link>
+      <div className="relative group w-full h-52">
+        <Link href={`/posts/${post.id}`}>
+          <Image
+            src={post.image ?? "/default-image.png"} // ✅ ป้องกัน null
+            alt={post.name}
+            fill
+            className="object-cover"
+          />
+        </Link>
 
-          {/* ปุ่ม Favorite */}
-          <button
-            onClick={handleFavoriteClick}
-            className="absolute top-2 right-2 bg-white p-3 rounded-full shadow-md transition hover:bg-red-100"
-            aria-label={isFavorited ? "Unfavorite" : "Favorite"}
-          >
-            {isFavorited ? (
-              <FaHeart className="text-red-500 w-5 h-5" />
-            ) : (
-              <FaRegHeart className="text-gray-500 w-5 h-5" />
-            )}
-          </button>
-        </div>
-      )}
+        {/* ปุ่ม Favorite */}
+        <button
+          onClick={handleFavoriteClick}
+          className="absolute top-2 right-2 bg-white p-3 rounded-full shadow-md transition hover:bg-red-100"
+          aria-label={isFavorited ? "Unfavorite" : "Favorite"}
+        >
+          {isFavorited ? (
+            <FaHeart className="text-red-500 w-5 h-5" />
+          ) : (
+            <FaRegHeart className="text-gray-500 w-5 h-5" />
+          )}
+        </button>
+      </div>
 
       {/* ข้อมูลสินค้า */}
       <div className="p-4">
@@ -60,7 +53,7 @@ export default function PostCard({ post }: { post: Post }) {
         {post.profile ? (
           <div className="flex items-center mt-3">
             <Image
-              src={post.profile.profileImage || "/default-profile.png"}
+              src={post.profile.profileImage ?? "/default-profile.png"} // ✅ ป้องกัน null
               alt={`${post.profile.firstName} ${post.profile.lastName}`}
               className="w-10 h-10 rounded-full border border-gray-300 shadow-xs"
               width={40}

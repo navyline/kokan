@@ -18,7 +18,6 @@ export async function getProfileById(id: string) {
       },
       followers: true,
       following: true,
-      blockedUsers: true,
     },
   });
 }

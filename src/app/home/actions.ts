@@ -6,21 +6,27 @@ type Post = {
   id: string;
   name: string;
   image?: string;
-  profile: {
+  profile?: {
     id: string;
     firstName: string;
     lastName: string;
-    profileImage?: string;
-  };
-  category: {
+    profileImage?: string | null;
+  } | null;
+  category?: {
     name: string;
-  };
+  } | null;
 };
 
-export async function fetchPostsAction(
-  categoryId: string | null = null
-): Promise<Post[]> {
+/**
+ * ดึงโพสต์ทั้งหมดจากฐานข้อมูล โดยสามารถกรองตาม Category ได้
+ */
+export async function fetchPostsAction(categoryId: string | null = null): Promise<Post[]> {
   try {
+    if (!db) {
+      console.error("❌ Database instance is not available.");
+      throw new Error("Database connection error");
+    }
+
     const posts = await db.post.findMany({
       where: categoryId ? { categoryId } : {},
       include: {
@@ -47,15 +53,15 @@ export async function fetchPostsAction(
       id: post.id,
       name: post.name,
       image: post.image || undefined,
-      profile: {
-        id: post.profile.id,
-        firstName: post.profile.firstName,
-        lastName: post.profile.lastName,
-        profileImage: post.profile.profileImage || undefined,
-      },
-      category: {
-        name: post.category?.name || "Uncategorized",
-      },
+      profile: post.profile
+        ? {
+            id: post.profile.id,
+            firstName: post.profile.firstName,
+            lastName: post.profile.lastName,
+            profileImage: post.profile.profileImage || null,
+          }
+        : null,
+      category: post.category ? { name: post.category.name } : null,
     }));
   } catch (error) {
     console.error("❌ Error fetching posts:", error);
@@ -63,9 +69,16 @@ export async function fetchPostsAction(
   }
 }
 
-// ดึงหมวดหมู่จาก Database
+/**
+ * ดึงหมวดหมู่ทั้งหมดจากฐานข้อมูล
+ */
 export async function fetchCategories() {
   try {
+    if (!db) {
+      console.error("❌ Database instance is not available.");
+      throw new Error("Database connection error");
+    }
+
     const categories = await db.category.findMany({
       select: {
         id: true,

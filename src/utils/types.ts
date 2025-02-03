@@ -1,25 +1,14 @@
-export type actionFunction = (
-  prevState: Record<string, unknown>,
-  formData: FormData
-) => Promise<{ message: string }>;
-
-export type LandmarkCardProps = {
+export type Post = {
   id: string;
   name: string;
-  description: string;
-  image: string;
-  category: string;
-  province: string;
-  price: number;
-  lat: number;
-  lng: number;
+  image?: string;
+  profile?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    profileImage?: string | null;
+  } | null;
+  category?: {
+    name: string;
+  } | null;
 };
-
-export type CurrentSlideData = {
-  data: LandmarkCardProps;
-  index: number;
-};
-// export type CurrentSlideData = {
-//   data: LandmarkCardProps;
-//   // index: number;
-// };

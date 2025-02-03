@@ -50,7 +50,7 @@ function Notification() {
 function ChatButton() {
   return (
     <Link
-      href="/chat"
+      href="/chats"
       className="p-3 text-gray-600 hover:text-teal-500 transition flex items-center justify-center"
     >
       <MessageCircle className="h-6 w-6" />

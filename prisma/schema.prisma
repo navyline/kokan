@@ -9,23 +9,30 @@ datasource db {
 }
 
 model Profile {
-  id           String        @id @default(uuid()) @db.Uuid
-  clerkId      String        @unique
-  firstName    String
-  lastName     String
-  userName     String        @unique
-  email        String?       @unique
-  profileImage String?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  badgeRank    Int?
-  bio          String?
-  coverImage   String?
-  interests    String?
-  meetingSpots String?
-  role         UserRole      @default(USER)
-  posts        Post[]
-  verification Verification?
+  id            String        @id @default(uuid()) @db.Uuid
+  clerkId       String        @unique
+  firstName     String
+  lastName      String
+  userName      String        @unique
+  email         String?       @unique
+  profileImage  String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  badgeRank     Int?
+  bio           String?
+  coverImage    String?
+  interests     String?
+  meetingSpots  String?
+  role          UserRole      @default(USER)
+  createdChats  Chat[]        @relation("CreatorChats")
+  receivedChats Chat[]        @relation("ReceiverChats")
+  messages      Message[]
+  posts         Post[]
+  verification  Verification?
+  followers     Follow[] @relation("followers")
+  following     Follow[] @relation("following")
+  comments      Comment[]  // ✅ เพิ่ม Relation กลับไปที่ Comment
+  favorites     Favorite[] // ✅ เพิ่ม Relation กลับไปที่ Favorite
 
   @@index([userName, email])
 }
@@ -50,14 +57,17 @@ model Post {
   lng         Float?
   price       Int
   createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
   profileId   String     @db.Uuid
-  categoryId  String?
+  categoryId  String?    @db.Uuid
   condition   Condition
   status      PostStatus @default(AVAILABLE)
   views       Int        @default(0)
   tags        String?
   profile     Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  favorites   Favorite[]
+  comments    Comment[]
+  category    Category?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
 }
 
 model Follow {
@@ -67,17 +77,10 @@ model Follow {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now())
 
+  follower Profile @relation("followers", fields: [followerId], references: [id], onDelete: Cascade)
+  following Profile @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+
   @@unique([followerId, followingId])
-}
-
-model Block {
-  id        String   @id @default(uuid()) @db.Uuid
-  blockerId String   @db.Uuid
-  blockedId String   @db.Uuid
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
-
-  @@unique([blockerId, blockedId])
 }
 
 model Comment {
@@ -87,6 +90,8 @@ model Comment {
   updatedAt DateTime @default(now())
   postId    String   @db.Uuid
   profileId String   @db.Uuid
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
 }
 
 model Favorite {
@@ -95,14 +100,21 @@ model Favorite {
   updatedAt DateTime @default(now())
   profileId String   @db.Uuid
   postId    String   @db.Uuid
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
 }
 
 model Chat {
-  id         String   @id @default(uuid()) @db.Uuid
-  creatorId  String   @db.Uuid
-  receiverId String   @db.Uuid
-  isGroup    Boolean  @default(false)
-  createdAt  DateTime @default(now())
+  id         String    @id @default(uuid()) @db.Uuid
+  creatorId  String    @db.Uuid
+  receiverId String    @db.Uuid
+  isGroup    Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  creator    Profile   @relation("CreatorChats", fields: [creatorId], references: [id], onDelete: Cascade)
+  receiver   Profile   @relation("ReceiverChats", fields: [receiverId], references: [id], onDelete: Cascade)
+  messages   Message[]
+
+  @@unique([creatorId, receiverId])
 }
 
 model Message {
@@ -112,6 +124,10 @@ model Message {
   content   String
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
+  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  sender    Profile  @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([chatId, createdAt])
 }
 
 model Trade {
@@ -136,8 +152,9 @@ model Review {
 }
 
 model Category {
-  id   String @id @default(uuid()) @db.Uuid
-  name String @unique
+  id    String @id @default(uuid()) @db.Uuid
+  name  String @unique
+  posts Post[]
 }
 
 model Notification {

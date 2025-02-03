@@ -3,30 +3,13 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import PostCard from "@/components/PostCard";
-import { fetchPostsAction } from "./actions";
-import { fetchCategories } from "./actions"; // ดึง Category
+import { fetchPostsAction, fetchCategories } from "./actions";
 import { ChevronDown } from "lucide-react";
-
-type Post = {
-  id: string;
-  name: string;
-  image?: string;
-  profile: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    profileImage?: string;
-  };
-  category: {
-    name: string;
-  };
-};
+import { Post } from "@/utils/types"; 
 
 export default function HomePage() {
   const [posts, setPosts] = useState<Post[]>([]);
-  const [categories, setCategories] = useState<{ id: string; name: string }[]>(
-    []
-  );
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -89,9 +72,7 @@ export default function HomePage() {
               posts.map((post) => <PostCard key={post.id} post={post} />)
             ) : (
               <p className="text-gray-500 text-center col-span-full">
-                {searchQuery
-                  ? "❌ No results found 😕"
-                  : "⚠️ No posts available"}
+                {searchQuery ? "❌ No results found 😕" : "⚠️ No posts available"}
               </p>
             )}
           </div>

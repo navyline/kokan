@@ -10,7 +10,7 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const iconUrl =
   "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon-2x.png";
@@ -32,7 +32,6 @@ function LocationMarker({ position, setPosition }: LocationMarkerProps) {
       const newLocation: Latlng = [e.latlng.lat, e.latlng.lng];
       setPosition(newLocation);
 
-      // Check if the map instance is defined before calling flyTo
       if (map) {
         map.flyTo(e.latlng, map.getZoom());
       }
@@ -47,17 +46,25 @@ function LocationMarker({ position, setPosition }: LocationMarkerProps) {
 }
 
 const MapLandmark = ({
-  location = { lat: 13, lng: 100 }, // Default location if none provided
+  location = { lat: 13, lng: 100 },
 }: {
   location?: { lat: number; lng: number };
 }) => {
   const [position, setPosition] = useState<Latlng | null>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(typeof window !== "undefined");
+  }, []);
+
+  if (!isClient) {
+    return <p>Loading map...</p>;
+  }
 
   return (
     <div>
       <h1 className="mt-4 font-semibold">Where are you?</h1>
 
-      {/* Hidden inputs to capture coordinates */}
       <input type="hidden" name="lat" value={position ? position[0] : ""} />
       <input type="hidden" name="lng" value={position ? position[1] : ""} />
 
@@ -67,17 +74,14 @@ const MapLandmark = ({
         zoom={7}
         scrollWheelZoom
       >
-        {/* Initial marker */}
         <Marker position={[location.lat, location.lng]} icon={markerIcon}>
           <Popup>
             Initial Location <br /> Drag or click to update.
           </Popup>
         </Marker>
 
-        {/* User-selected location marker */}
         <LocationMarker position={position} setPosition={setPosition} />
 
-        {/* Layers control */}
         <LayersControl>
           <LayersControl.BaseLayer name="OpenStreetMap" checked>
             <TileLayer

@@ -23,13 +23,13 @@ export default async function TradeDashboard() {
             {trade.status === "PENDING" && (
               <div className="mt-2 flex gap-2">
                 <button
-                  onClick={() => updateTradeStatus({ tradeId: trade.id, status: "ACCEPTED" })}
+                  onClick={() => updateTradeStatus(trade.id, "ACCEPTED")} // ✅ แก้ไขให้ส่ง 2 arguments
                   className="px-4 py-2 bg-green-500 text-white rounded-lg shadow"
                 >
                   ✅ ตอบรับ
                 </button>
                 <button
-                  onClick={() => updateTradeStatus({ tradeId: trade.id, status: "REJECTED" })}
+                  onClick={() => updateTradeStatus(trade.id, "REJECTED")} // ✅ แก้ไขให้ส่ง 2 arguments
                   className="px-4 py-2 bg-red-500 text-white rounded-lg shadow"
                 >
                   ❌ ปฏิเสธ
@@ -45,7 +45,7 @@ export default async function TradeDashboard() {
             {/* ✅ ปุ่มยืนยันเมื่อแลกเปลี่ยนสำเร็จ */}
             {trade.status === "ACCEPTED" && (
               <button
-                onClick={() => updateTradeStatus({ tradeId: trade.id, status: "COMPLETED" })}
+                onClick={() => updateTradeStatus(trade.id, "COMPLETED")} // ✅ แก้ไขให้ส่ง 2 arguments
                 className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg shadow"
               >
                 🏆 ยืนยันการแลกเปลี่ยน

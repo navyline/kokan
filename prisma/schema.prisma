@@ -31,11 +31,15 @@ model Profile {
   verification  Verification?
   followers     Follow[] @relation("followers")
   following     Follow[] @relation("following")
-  comments      Comment[]  // ✅ เพิ่ม Relation กลับไปที่ Comment
-  favorites     Favorite[] // ✅ เพิ่ม Relation กลับไปที่ Favorite
+  comments      Comment[]
+  favorites     Favorite[]
+
+  offeredTrades Trade[] @relation("TradeOfferBy")
+  receivedTrades Trade[] @relation("TradeOfferTo")
 
   @@index([userName, email])
 }
+
 
 model Verification {
   userId      String             @unique @db.Uuid
@@ -68,7 +72,12 @@ model Post {
   favorites   Favorite[]
   comments    Comment[]
   category    Category?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  offeredTrades Trade[] @relation("TradePostOffered")
+  wantedTrades  Trade[] @relation("TradePostWanted")
 }
+
+
 
 model Follow {
   id          String   @id @default(uuid()) @db.Uuid
@@ -139,7 +148,15 @@ model Trade {
   offerToId     String      @db.Uuid
   postOfferedId String      @db.Uuid
   postWantedId  String?     @db.Uuid
+
+  offerBy    Profile @relation(name: "TradeOfferBy", fields: [offerById], references: [id], onDelete: Cascade)
+  offerTo    Profile @relation(name: "TradeOfferTo", fields: [offerToId], references: [id], onDelete: Cascade)
+  postOffered Post   @relation(name: "TradePostOffered", fields: [postOfferedId], references: [id], onDelete: Cascade)
+  postWanted  Post?  @relation(name: "TradePostWanted", fields: [postWantedId], references: [id], onDelete: Cascade)
 }
+
+
+
 
 model Review {
   id         String   @id @default(uuid()) @db.Uuid

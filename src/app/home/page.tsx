@@ -18,15 +18,24 @@ export default function HomePage() {
 
   useEffect(() => {
     const fetchPosts = async () => {
-      setLoading(true);
-      const postsData = await fetchPostsAction(selectedCategory);
-      setPosts(postsData);
-      setLoading(false);
+      try {
+        setLoading(true);
+        const postsData = await fetchPostsAction(selectedCategory);
+        setPosts(postsData);
+      } catch (error) {
+        console.error("Failed to fetch posts:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     const fetchCategoriesData = async () => {
-      const categoriesData = await fetchCategories();
-      setCategories(categoriesData);
+      try {
+        const categoriesData = await fetchCategories();
+        setCategories(categoriesData);
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+      }
     };
 
     fetchPosts();

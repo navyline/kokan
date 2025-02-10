@@ -31,7 +31,7 @@ function CreatePostButton() {
 }
 
 function Notification() {
-  const [notifications] = useState(5); // Mock notifications count
+  const [notifications] = useState(5); // สมมติว่ามี 5 การแจ้งเตือน
 
   return (
     <div className="relative">
@@ -71,6 +71,7 @@ function UserMenu() {
       return;
     }
 
+    // ส่ง formData ไปหา Action ฝั่ง Server
     const formData = new FormData();
     formData.set("clerkId", user.id);
 
@@ -105,7 +106,8 @@ function UserMenu() {
           height={32}
           className="h-8 w-8 rounded-full border border-gray-300 object-cover"
         />
-        <span className="hidden sm:block text-gray-700">
+        {/* ซ่อนชื่อในจอเล็ก (hidden on small), แสดงเมื่อ md ขึ้นไป */}
+        <span className="hidden md:block text-gray-700">
           {user.firstName || "User"}
         </span>
       </button>
@@ -157,12 +159,20 @@ function UserMenu() {
 
 export default function Navbar() {
   return (
-    <nav className="bg-white shadow-md px-6 py-4 flex items-center justify-between">
-      <Logo />
-      <div className="flex-1 mx-4 flex justify-center">
+    // ใช้ flex-wrap + items-center เพื่อให้รองรับมือถือ
+    <nav className="bg-white shadow-md px-4 py-2 flex flex-wrap items-center justify-between">
+      {/* ส่วน Left: Logo */}
+      <div className="flex items-center">
+        <Logo />
+      </div>
+
+      {/* ส่วน Middle: Search (บนมือถือจะเลื่อนลงมาเป็นบรรทัดถัดไป) */}
+      <div className="flex-1 min-w-[200px] mt-2 md:mt-0 md:mx-4 flex justify-center">
         <Search />
       </div>
-      <div className="flex items-center space-x-4">
+
+      {/* ส่วน Right: Icon + UserMenu */}
+      <div className="flex items-center space-x-2 mt-2 md:mt-0">
         <CreatePostButton />
         <ChatButton />
         <Notification />

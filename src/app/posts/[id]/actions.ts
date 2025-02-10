@@ -3,9 +3,9 @@
 import db from "@/utils/db";
 import { currentUser } from "@clerk/nextjs/server";
 
-// =====================
+// ===========================
 // 1. ดึงรายละเอียดโพสต์
-// =====================
+// ===========================
 export const fetchPostDetail = async ({ id }: { id: string }) => {
   try {
     const post = await db.post.findUnique({
@@ -14,16 +14,13 @@ export const fetchPostDetail = async ({ id }: { id: string }) => {
         profile: true,
         comments: {
           include: {
-            profile: true, // ✅ ดึงข้อมูลโปรไฟล์ของผู้คอมเมนต์
+            profile: true,
           },
-          orderBy: {
-            createdAt: "desc",
-          },
+          orderBy: { createdAt: "desc" },
         },
-        favorites: true, // ✅ ดึงข้อมูล Favorite ด้วย
+        favorites: true,
       },
     });
-
     return post;
   } catch (error) {
     console.error("Error fetching post detail:", error);
@@ -31,9 +28,36 @@ export const fetchPostDetail = async ({ id }: { id: string }) => {
   }
 };
 
-// =====================
-// 2. เพิ่มคอมเมนต์
-// =====================
+// ===========================
+// 2. ดึงรายการโพสต์ของ user ปัจจุบัน
+// ===========================
+export async function fetchUserItems() {
+  try {
+    const user = await currentUser();
+    if (!user) return [];
+
+    const profile = await db.profile.findUnique({
+      where: { clerkId: user.id },
+    });
+    if (!profile) return [];
+
+    const userPosts = await db.post.findMany({
+      where: {
+        profileId: profile.id,
+        status: "AVAILABLE",
+      },
+    });
+
+    return userPosts;
+  } catch (error) {
+    console.error("Error fetching user items:", error);
+    return [];
+  }
+}
+
+// ===========================
+// 3. เพิ่มคอมเมนต์
+// ===========================
 export async function addComment({ postId, content }: { postId: string; content: string }) {
   try {
     const user = await currentUser();
@@ -42,7 +66,6 @@ export async function addComment({ postId, content }: { postId: string; content:
     const profile = await db.profile.findUnique({
       where: { clerkId: user.id },
     });
-
     if (!profile) throw new Error("No Profile found for current user");
 
     const newComment = await db.comment.create({
@@ -63,9 +86,9 @@ export async function addComment({ postId, content }: { postId: string; content:
   }
 }
 
-// =====================
-// 3. Toggle Favorite
-// =====================
+// ===========================
+// 4. Toggle Favorite
+// ===========================
 export async function toggleFavorite({ postId }: { postId: string }) {
   try {
     const user = await currentUser();
@@ -74,7 +97,6 @@ export async function toggleFavorite({ postId }: { postId: string }) {
     const profile = await db.profile.findUnique({
       where: { clerkId: user.id },
     });
-
     if (!profile) throw new Error("No Profile found for current user");
 
     const existingFavorite = await db.favorite.findFirst({
@@ -102,13 +124,48 @@ export async function toggleFavorite({ postId }: { postId: string }) {
   }
 }
 
-export async function makeTradeOffer({ postId }: { postId: string }) {
+// ===========================
+// 5. Make an Offer
+// ===========================
+interface MakeTradeOfferInput {
+  postId: string;
+  offeredPostId: string;
+}
+
+export async function makeTradeOffer({ postId, offeredPostId }: MakeTradeOfferInput) {
   try {
-    const response = await fetch("/api/trade", {
-      method: "POST",
-      body: JSON.stringify({ postId }),
+    const user = await currentUser();
+    if (!user) throw new Error("Not authenticated");
+
+    const profile = await db.profile.findUnique({
+      where: { clerkId: user.id },
     });
-    return response.json();
+    if (!profile) throw new Error("No Profile found for current user");
+
+    const offeredPost = await db.post.findUnique({
+      where: { id: offeredPostId },
+    });
+    if (!offeredPost) throw new Error("Offered post not found");
+    if (offeredPost.profileId !== profile.id) {
+      throw new Error("You do not own this offered post!");
+    }
+
+    const wantedPost = await db.post.findUnique({
+      where: { id: postId },
+    });
+    if (!wantedPost) throw new Error("Wanted post not found");
+
+    const newTrade = await db.trade.create({
+      data: {
+        offerById: profile.id,
+        offerToId: wantedPost.profileId,
+        postOfferedId: offeredPostId,
+        postWantedId: postId,
+        status: "PENDING",
+      },
+    });
+
+    return newTrade;
   } catch (error) {
     console.error("Error making trade offer:", error);
     throw error;

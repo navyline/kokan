@@ -2,188 +2,170 @@
 
 import db from "@/utils/db";
 import { currentUser } from "@clerk/nextjs/server";
-import { Trade, TradeStatus } from "@/utils/types";
+import { TradeStatus } from "@/utils/types";
 
-export async function fetchUserTrades(): Promise<Trade[]> {
+/**
+ * ดึงข้อมูล Dashboard:
+ * - Trades (offerById หรือ offerToId เป็น user ปัจจุบัน)
+ * - Favorites
+ * - Notifications
+ * พร้อมส่ง profileId
+ */
+export async function fetchUserDashboardData() {
   try {
     const user = await currentUser();
-    if (!user) throw new Error("Not authenticated");
+    if (!user) throw new Error("ยังไม่ได้ล็อกอิน");
 
     const profile = await db.profile.findUnique({
       where: { clerkId: user.id },
     });
+    if (!profile) throw new Error("ไม่พบ Profile ของผู้ใช้");
 
-    if (!profile) throw new Error("Profile not found");
-
+    // ✅ ดึง Trade พร้อม include profile ใน postOffered & postWanted
     const trades = await db.trade.findMany({
       where: {
         OR: [{ offerById: profile.id }, { offerToId: profile.id }],
       },
       include: {
-        offerBy: {
-          select: {
-            id: true,
-            clerkId: true,
-            userName: true,
-            firstName: true,
-            lastName: true,
-            profileImage: true,
-          },
-        },
-        offerTo: {
-          select: {
-            id: true,
-            clerkId: true,
-            userName: true,
-            firstName: true,
-            lastName: true,
-            profileImage: true,
-          },
-        },
+        offerBy: true,
+        offerTo: true,
         postOffered: {
-          select: {
-            id: true,
-            name: true,
-            image: true,
-            description: true,
-            province: true,
-            price: true,
-            views: true,
-            createdAt: true,
-            updatedAt: true,
-            profile: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                profileImage: true,
-                clerkId: true,
-                userName: true,
-              },
-            },
+          include: {
+            profile: true, // ✅ Include profile
           },
         },
         postWanted: {
-          select: {
-            id: true,
-            name: true,
-            image: true,
-            description: true,
-            province: true,
-            price: true,
-            views: true,
-            createdAt: true,
-            updatedAt: true,
-            profile: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                profileImage: true,
-                clerkId: true,
-                userName: true,
-              },
-            },
+          include: {
+            profile: true, // ✅ Include profile
           },
         },
       },
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: { createdAt: "desc" },
     });
 
-    return trades.map((trade) => ({
-      ...trade,
-      createdAt: trade.createdAt.toISOString(), // ✅ แปลง Date เป็น string
-      updatedAt: trade.updatedAt.toISOString(),
-      postOffered: trade.postOffered
-        ? {
-            ...trade.postOffered,
-            createdAt: trade.postOffered.createdAt.toISOString(), // ✅ แปลง Date เป็น string
-            updatedAt: trade.postOffered.updatedAt.toISOString(),
-          }
-        : null, // ✅ ถ้าไม่มีข้อมูล ให้เป็น `null`
-      postWanted: trade.postWanted
-        ? {
-            ...trade.postWanted,
-            createdAt: trade.postWanted.createdAt.toISOString(), // ✅ แปลง Date เป็น string
-            updatedAt: trade.postWanted.updatedAt.toISOString(),
-          }
-        : null, // ✅ ถ้าไม่มีข้อมูล ให้เป็น `null`
-    }));
+    // ✅ ดึง Favorites พร้อม post ที่มี profile
+    const favorites = await db.favorite.findMany({
+      where: { profileId: profile.id },
+      include: {
+        post: {
+          include: {
+            profile: true, // ✅ Include profile ใน Favorite ด้วย
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    // ✅ ดึง Notifications
+    const notifications = await db.notification.findMany({
+      where: { receiverId: profile.id },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return {
+      profileId: profile.id,
+      trades: trades.map((t) => ({
+        ...t,
+        createdAt: t.createdAt.toISOString(),
+        updatedAt: t.updatedAt.toISOString(),
+      })),
+      favorites: favorites.map((f) => ({
+        ...f,
+        createdAt: f.createdAt.toISOString(),
+        updatedAt: f.updatedAt.toISOString(),
+      })),
+      notifications: notifications.map((n) => ({
+        ...n,
+        createdAt: n.createdAt.toISOString(),
+        updatedAt: n.updatedAt.toISOString(),
+      })),
+    };
   } catch (error) {
-    console.error("Error fetching user trades:", error);
-    return [];
+    console.error("fetchUserDashboardData error:", error);
+    return {
+      profileId: null,
+      trades: [],
+      favorites: [],
+      notifications: [],
+    };
   }
 }
 
 /**
- * อัปเดตสถานะของ Trade
- * @param tradeId - ID ของการแลกเปลี่ยน
- * @param status - สถานะใหม่ของ Trade ("PENDING", "ACCEPTED", "REJECTED", "CANCELLED", "COMPLETED")
+ * updateTradeStatus - เปลี่ยนสถานะข้อเสนอ (ACCEPTED, REJECTED, CANCELLED, ฯลฯ)
+ * Return Trade ที่อัปเดตแล้ว (status ใหม่) เพื่อให้ Client เอามาอัปเดตใน State ได้
  */
-export async function updateTradeStatus(tradeId: string, status: TradeStatus) {
+export async function updateTradeStatus(tradeId: string, newStatus: TradeStatus) {
   try {
-    // ✅ ตรวจสอบว่า Trade มีอยู่จริง
-    const existingTrade = await db.trade.findUnique({
-      where: { id: tradeId },
+    const user = await currentUser();
+    if (!user) throw new Error("ยังไม่ได้ล็อกอิน");
+
+    const profile = await db.profile.findUnique({
+      where: { clerkId: user.id },
     });
+    if (!profile) throw new Error("ไม่พบ Profile ของผู้ใช้");
 
-    if (!existingTrade) {
-      return {
-        success: false,
-        message: "Trade not found",
-      };
-    }
-
-    const updatedTrade = await db.trade.update({
+    // ✅ หา Trade พร้อม include profile ใน postOffered & postWanted
+    const trade = await db.trade.findUnique({
       where: { id: tradeId },
-      data: { status },
       include: {
-        offerBy: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            profileImage: true,
-          },
-        },
-        offerTo: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            profileImage: true,
-          },
-        },
+        offerBy: true,
+        offerTo: true,
         postOffered: {
-          select: {
-            id: true,
-            name: true,
-            image: true,
+          include: {
+            profile: true, // ✅ Include profile
           },
         },
         postWanted: {
-          select: {
-            id: true,
-            name: true,
-            image: true,
+          include: {
+            profile: true, // ✅ Include profile
+          },
+        },
+      },
+    });
+    if (!trade) throw new Error("ไม่พบ Trade นี้");
+
+    // ✅ ตรวจสิทธิ์
+    if (newStatus === "ACCEPTED" || newStatus === "REJECTED") {
+      if (trade.offerToId !== profile.id) {
+        throw new Error("คุณไม่ใช่ผู้รับข้อเสนอนี้");
+      }
+    }
+    if (newStatus === "CANCELLED") {
+      if (trade.offerById !== profile.id) {
+        throw new Error("คุณไม่ใช่ผู้ส่งข้อเสนอนี้");
+      }
+    }
+
+    // ✅ อัปเดตสถานะ
+    const updated = await db.trade.update({
+      where: { id: tradeId },
+      data: {
+        status: newStatus,
+      },
+      include: {
+        offerBy: true,
+        offerTo: true,
+        postOffered: {
+          include: {
+            profile: true, // ✅ Include profile หลังอัปเดต
+          },
+        },
+        postWanted: {
+          include: {
+            profile: true, // ✅ Include profile หลังอัปเดต
           },
         },
       },
     });
 
     return {
-      success: true,
-      message: "Trade status updated successfully",
-      trade: updatedTrade,
+      ...updated,
+      createdAt: updated.createdAt.toISOString(),
+      updatedAt: updated.updatedAt.toISOString(),
     };
   } catch (error) {
-    console.error("Error updating trade status:", error);
-    return {
-      success: false,
-      message: "Failed to update trade status",
-      error: error instanceof Error ? error.message : String(error),
-    };
+    console.error("updateTradeStatus error:", error);
+    throw error;
   }
 }

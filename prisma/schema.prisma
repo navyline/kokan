@@ -55,7 +55,7 @@ model Post {
   id          String     @id @default(uuid()) @db.Uuid
   name        String
   description String
-  image       String?
+  images      String[]   // ✅ แทนที่ "image" ด้วย "images" เป็น Array
   province    String
   lat         Float?
   lng         Float?
@@ -76,6 +76,7 @@ model Post {
   offeredTrades Trade[] @relation("TradePostOffered")
   wantedTrades  Trade[] @relation("TradePostWanted")
 }
+
 
 
 

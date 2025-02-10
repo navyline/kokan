@@ -14,13 +14,16 @@ export default function PostCard({ post }: { post: Post }) {
     setIsFavorited(!isFavorited);
   };
 
+  // ✅ เลือกรูปภาพแรกจาก Array หรือใช้ default
+  const mainImage = post.images && post.images.length > 0 ? post.images[0] : "/default-image.png";
+
   return (
     <div className="relative border border-gray-200 rounded-xl shadow-lg bg-white overflow-hidden transition-transform transform hover:scale-105 hover:shadow-xl">
       {/* รูปสินค้า */}
       <div className="relative group w-full h-52">
         <Link href={`/posts/${post.id}`}>
           <Image
-            src={post.image ?? "/default-image.png"} // ✅ ป้องกัน null
+            src={mainImage} // ✅ ใช้ mainImage แทน
             alt={post.name}
             fill
             className="object-cover"

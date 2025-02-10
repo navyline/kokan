@@ -40,25 +40,24 @@ export async function fetchPostsAction(categoryId: string | null = null): Promis
     return posts.map((post) => ({
       id: post.id,
       name: post.name,
-      image: post.image || null,
-      description: post.description, // ✅ เพิ่มฟิลด์ที่ขาด
-      province: post.province, // ✅ เพิ่มฟิลด์ที่ขาด
-      price: post.price, // ✅ เพิ่มฟิลด์ที่ขาด
-      createdAt: post.createdAt.toISOString(), // ✅ แปลงเป็น string
-      updatedAt: post.updatedAt.toISOString(), // ✅ แปลงเป็น string
+      images: post.images || [], // ✅ ใช้ images แทน image
+      description: post.description,
+      province: post.province,
+      price: post.price,
+      createdAt: post.createdAt.toISOString(),
+      updatedAt: post.updatedAt.toISOString(),
       views: post.views || 0,
       tags: post.tags || null,
       profile: post.profile
-  ? {
-      id: post.profile.id,
-      clerkId: post.profile.clerkId, // ✅ เพิ่ม clerkId
-      userName: post.profile.userName, // ✅ เพิ่ม userName
-      firstName: post.profile.firstName,
-      lastName: post.profile.lastName,
-      profileImage: post.profile.profileImage || null,
-    }
-  : null,
-
+        ? {
+            id: post.profile.id,
+            clerkId: post.profile.clerkId,
+            userName: post.profile.userName,
+            firstName: post.profile.firstName,
+            lastName: post.profile.lastName,
+            profileImage: post.profile.profileImage || null,
+          }
+        : null,
       category: post.category ? { name: post.category.name } : null,
     }));
   } catch (error) {

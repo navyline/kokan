@@ -12,7 +12,7 @@ export type Post = {
   id: string;
   name: string;
   description: string;
-  image?: string | null;
+  images: string[];
   province: string;
   lat?: number | null;
   lng?: number | null;
@@ -21,7 +21,7 @@ export type Post = {
   updatedAt: string;
   views: number;
   tags?: string | null;
-  profile: Profile | null;
+  profile?: Profile | null;
   category?: {
     name: string;
   } | null;
@@ -70,3 +70,19 @@ export type CurrentSlideData = {
 //   data: LandmarkCardProps;
 //   // index: number;
 // };
+
+export type Favorite = {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  post: Post | null;
+  // profile?: Profile; // ถ้าต้องการ
+};
+
+export type Notification = {
+  id: string;
+  message: string;
+  isRead: boolean;
+  createdAt: string;
+  // ฯลฯ
+};

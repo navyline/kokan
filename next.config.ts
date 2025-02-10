@@ -12,6 +12,11 @@ const nextConfig = {
       },
     ],
   },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '25mb', // ✅ เพิ่มขนาด Limit เป็น 10 MB
+    },
+  },
 };
 
 module.exports = nextConfig;

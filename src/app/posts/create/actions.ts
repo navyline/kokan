@@ -8,9 +8,7 @@ import { Condition } from "@prisma/client";
 export async function createPostAction(formData: FormData): Promise<string> {
   try {
     const user = await currentUser();
-    if (!user) {
-      throw new Error("You must be logged in to create a post.");
-    }
+    if (!user) throw new Error("You must be logged in to create a post.");
 
     const profile = await db.profile.findUnique({
       where: { clerkId: user.id },
@@ -26,12 +24,13 @@ export async function createPostAction(formData: FormData): Promise<string> {
     const province = formData.get("province") as string;
     const category = formData.get("category") as string;
     const condition = formData.get("condition") as Condition;
-    const image = formData.get("image") as File;
+    const files = formData.getAll("images") as File[]; // รองรับหลายไฟล์
 
+    // สมมติว่า location (lat, lng) มาจาก MapLandmark component
     const lat = parseFloat(formData.get("lat") as string);
     const lng = parseFloat(formData.get("lng") as string);
 
-    if (!name || !description || isNaN(price) || !province || !category || !condition || !image) {
+    if (!name || !description || isNaN(price) || !province || !category || !condition || files.length === 0) {
       throw new Error("Please fill out all required fields.");
     }
 
@@ -39,7 +38,9 @@ export async function createPostAction(formData: FormData): Promise<string> {
       throw new Error("Please select a valid location.");
     }
 
-    const imageUrl = await uploadFile(image);
+    // อัปโหลดภาพหลายภาพพร้อมกัน
+    const imageUploadPromises = files.map((file) => uploadFile(file));
+    const imageUrls = await Promise.all(imageUploadPromises);
 
     const newPost = await db.post.create({
       data: {
@@ -49,14 +50,13 @@ export async function createPostAction(formData: FormData): Promise<string> {
         province,
         categoryId: category,
         condition,
-        image: imageUrl,
+        images: imageUrls, // บันทึก URL ของภาพหลายภาพ (ตรวจสอบให้แน่ใจว่าใน Prisma Schema ฟิลด์นี้เป็น array เช่น String[])
         lat,
         lng,
         profileId: profile.id,
       },
     });
 
-    // ส่ง URL ของโพสต์กลับไปยัง Client
     return `/posts/${newPost.id}`;
   } catch (error: unknown) {
     if (error instanceof Error) {

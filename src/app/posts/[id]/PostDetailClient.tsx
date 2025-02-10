@@ -119,6 +119,7 @@ export default function PostDetailClient({
 
   // เปิด Modal Make an Offer
   const handleOpenOfferModal = () => {
+    // ถ้าเป็นเจ้าของโพสต์ ไม่ต้องทำอะไร
     if (isOwner) return;
     setIsOfferModalOpen(true);
   };
@@ -286,7 +287,8 @@ export default function PostDetailClient({
                     <FaHeart /> {isFavorite ? "Favorited" : "Favorite"}
                   </button>
 
-                  {!offerSent && (
+                  {/* แสดงปุ่ม Make an Offer เฉพาะเมื่อไม่ใช่เจ้าของโพสต์ */}
+                  {!offerSent && !isOwner && (
                     <button
                       onClick={handleOpenOfferModal}
                       disabled={isPending}

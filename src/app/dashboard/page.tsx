@@ -4,7 +4,7 @@ import DashboardClient from "./DashboardClient";
 
 /**
  * หน้า Dashboard (Server Component)
- * ดึงข้อมูลแล้วส่งลง Client
+ * ดึงข้อมูล Dashboard แล้วส่งไปยัง Client Component
  */
 export default async function DashboardPage() {
   const data = await fetchUserDashboardData();
@@ -14,12 +14,11 @@ export default async function DashboardPage() {
 
   const profileId = data.profileId ?? "";
 
-  // แปลงข้อมูลของ trades ให้ createdAt, updatedAt ในแต่ละระดับเป็น ISO string
-  const trades = (data.trades ?? []).map(trade => ({
+  // แปลงข้อมูลของ trades ให้ createdAt, updatedAt เป็น ISO string
+  const trades = (data.trades ?? []).map((trade) => ({
     ...trade,
     createdAt: new Date(trade.createdAt).toISOString(),
     updatedAt: new Date(trade.updatedAt).toISOString(),
-    // แปลง postOffered หากมี
     postOffered: trade.postOffered
       ? {
           ...trade.postOffered,
@@ -27,7 +26,6 @@ export default async function DashboardPage() {
           updatedAt: new Date(trade.postOffered.updatedAt).toISOString(),
         }
       : null,
-    // แปลง postWanted หากมี
     postWanted: trade.postWanted
       ? {
           ...trade.postWanted,
@@ -38,7 +36,7 @@ export default async function DashboardPage() {
   }));
 
   // แปลงข้อมูลของ favorites ให้ createdAt, updatedAt ของ post เป็น ISO string
-  const favorites = (data.favorites ?? []).map(fav => ({
+  const favorites = (data.favorites ?? []).map((fav) => ({
     ...fav,
     post: fav.post
       ? {

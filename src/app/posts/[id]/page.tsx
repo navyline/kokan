@@ -37,6 +37,7 @@ export default async function PostDetail({ params }: PostDetailProps) {
     lat: post.lat ?? undefined,
     lng: post.lng ?? undefined,
     price: post.price,
+    condition: post.condition || "default",
     createdAt: post.createdAt.toISOString(),
     profile: {
       id: post.profile?.id ?? "",

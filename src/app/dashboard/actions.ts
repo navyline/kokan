@@ -5,8 +5,9 @@ import { currentUser } from "@clerk/nextjs/server";
 import { TradeStatus } from "@/utils/types";
 
 /**
- * ดึงข้อมูล Dashboard:
- * - Trades (offerById หรือ offerToId เป็น user ปัจจุบัน)
+ * fetchUserDashboardData:
+ * ดึงข้อมูล Dashboard ของผู้ใช้:
+ * - Trades (ข้อเสนอที่ส่งและได้รับ)
  * - Favorites
  * - Notifications
  * พร้อมส่ง profileId
@@ -21,7 +22,7 @@ export async function fetchUserDashboardData() {
     });
     if (!profile) throw new Error("ไม่พบ Profile ของผู้ใช้");
 
-    // ✅ ดึง Trade พร้อม include profile ใน postOffered & postWanted
+    // ดึง Trade พร้อม include ข้อมูลของ postOffered & postWanted
     const trades = await db.trade.findMany({
       where: {
         OR: [{ offerById: profile.id }, { offerToId: profile.id }],
@@ -31,32 +32,32 @@ export async function fetchUserDashboardData() {
         offerTo: true,
         postOffered: {
           include: {
-            profile: true, // ✅ Include profile
+            profile: true,
           },
         },
         postWanted: {
           include: {
-            profile: true, // ✅ Include profile
+            profile: true,
           },
         },
       },
       orderBy: { createdAt: "desc" },
     });
 
-    // ✅ ดึง Favorites พร้อม post ที่มี profile
+    // ดึง Favorites พร้อมข้อมูล post และ profile
     const favorites = await db.favorite.findMany({
       where: { profileId: profile.id },
       include: {
         post: {
           include: {
-            profile: true, // ✅ Include profile ใน Favorite ด้วย
+            profile: true,
           },
         },
       },
       orderBy: { createdAt: "desc" },
     });
 
-    // ✅ ดึง Notifications
+    // ดึง Notifications
     const notifications = await db.notification.findMany({
       where: { receiverId: profile.id },
       orderBy: { createdAt: "desc" },
@@ -92,10 +93,11 @@ export async function fetchUserDashboardData() {
 }
 
 /**
- * updateTradeStatus - เปลี่ยนสถานะข้อเสนอ (ACCEPTED, REJECTED, CANCELLED, ฯลฯ)
- * Return Trade ที่อัปเดตแล้ว (status ใหม่) เพื่อให้ Client เอามาอัปเดตใน State ได้
+ * updateTradeStatus:
+ * เปลี่ยนสถานะข้อเสนอ (ACCEPTED, REJECTED, CANCELLED, ฯลฯ)
+ * ฟังก์ชันนี้จะไม่คืนค่าอะไร (void)
  */
-export async function updateTradeStatus(tradeId: string, newStatus: TradeStatus) {
+export async function updateTradeStatus(tradeId: string, newStatus: TradeStatus): Promise<void> {
   try {
     const user = await currentUser();
     if (!user) throw new Error("ยังไม่ได้ล็อกอิน");
@@ -105,7 +107,7 @@ export async function updateTradeStatus(tradeId: string, newStatus: TradeStatus)
     });
     if (!profile) throw new Error("ไม่พบ Profile ของผู้ใช้");
 
-    // ✅ หา Trade พร้อม include profile ใน postOffered & postWanted
+    // หา Trade พร้อม include ข้อมูลใน postOffered & postWanted
     const trade = await db.trade.findUnique({
       where: { id: tradeId },
       include: {
@@ -113,59 +115,64 @@ export async function updateTradeStatus(tradeId: string, newStatus: TradeStatus)
         offerTo: true,
         postOffered: {
           include: {
-            profile: true, // ✅ Include profile
+            profile: true,
           },
         },
         postWanted: {
           include: {
-            profile: true, // ✅ Include profile
+            profile: true,
           },
         },
       },
     });
     if (!trade) throw new Error("ไม่พบ Trade นี้");
 
-    // ✅ ตรวจสิทธิ์
-    if (newStatus === "ACCEPTED" || newStatus === "REJECTED") {
-      if (trade.offerToId !== profile.id) {
-        throw new Error("คุณไม่ใช่ผู้รับข้อเสนอนี้");
-      }
+    // ตรวจสอบสิทธิ์: สำหรับ ACCEPTED/REJECTED ให้เฉพาะผู้รับข้อเสนอ
+    if ((newStatus === "ACCEPTED" || newStatus === "REJECTED") && trade.offerToId !== profile.id) {
+      throw new Error("คุณไม่ใช่ผู้รับข้อเสนอนี้");
     }
-    if (newStatus === "CANCELLED") {
-      if (trade.offerById !== profile.id) {
-        throw new Error("คุณไม่ใช่ผู้ส่งข้อเสนอนี้");
-      }
+    // สำหรับ CANCELLED ให้เฉพาะผู้ส่งข้อเสนอ
+    if (newStatus === "CANCELLED" && trade.offerById !== profile.id) {
+      throw new Error("คุณไม่ใช่ผู้ส่งข้อเสนอนี้");
     }
 
-    // ✅ อัปเดตสถานะ
-    const updated = await db.trade.update({
+    await db.trade.update({
       where: { id: tradeId },
-      data: {
-        status: newStatus,
-      },
+      data: { status: newStatus },
       include: {
         offerBy: true,
         offerTo: true,
         postOffered: {
           include: {
-            profile: true, // ✅ Include profile หลังอัปเดต
+            profile: true,
           },
         },
         postWanted: {
           include: {
-            profile: true, // ✅ Include profile หลังอัปเดต
+            profile: true,
           },
         },
       },
     });
-
-    return {
-      ...updated,
-      createdAt: updated.createdAt.toISOString(),
-      updatedAt: updated.updatedAt.toISOString(),
-    };
+    // ไม่คืนค่าใด ๆ
   } catch (error) {
     console.error("updateTradeStatus error:", error);
     throw error;
   }
+}
+
+/**
+ * updateTradeStatusAction:
+ * Server Action ที่รับ FormData และเรียก updateTradeStatus
+ * คืนค่าเป็น Promise<void> (ไม่คืนค่าอะไร)
+ */
+export async function updateTradeStatusAction(formData: FormData): Promise<void> {
+  "use server";
+  const tradeId = formData.get("tradeId")?.toString();
+  const newStatus = formData.get("newStatus")?.toString();
+  if (!tradeId || !newStatus) {
+    throw new Error("Missing tradeId or newStatus");
+  }
+  await updateTradeStatus(tradeId, newStatus as TradeStatus);
+  // คืนค่า void
 }

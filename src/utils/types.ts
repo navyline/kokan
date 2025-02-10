@@ -25,6 +25,10 @@ export type Post = {
   category?: {
     name: string;
   } | null;
+  // เพิ่ม properties ที่จำเป็นสำหรับการใช้งานในคอมโพเนนต์
+  status?: string;        // สถานะของโพสต์ (เช่น "PENDING")
+  likesCount?: number;    // จำนวนไลค์
+  commentsCount?: number; // จำนวนคอมเมนต์
 };
 
 export type Trade = {
@@ -66,10 +70,6 @@ export type CurrentSlideData = {
   data: LandmarkCardProps;
   index: number;
 };
-// export type CurrentSlideData = {
-//   data: LandmarkCardProps;
-//   // index: number;
-// };
 
 export type Favorite = {
   id: string;

@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { MdOutlineChat } from "react-icons/md";
-
+import { updateTradeStatusAction } from "./actions";
 import { Trade, Favorite, Notification } from "@/utils/types";
 
 interface DashboardClientProps {
@@ -42,15 +42,7 @@ export default function DashboardClient({
   );
 }
 
-function TabButton({
-  label,
-  active,
-  onClick,
-}: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}) {
+function TabButton({ label, active, onClick }: { label: string; active: boolean; onClick: () => void; }) {
   return (
     <button
       onClick={onClick}
@@ -63,7 +55,6 @@ function TabButton({
   );
 }
 
-// ✅ ฟังก์ชันช่วยแปลงสถานะเป็นภาษาไทยและกำหนดสี
 const getStatusStyle = (status: string) => {
   switch (status) {
     case "ACCEPTED":
@@ -98,20 +89,11 @@ const translateStatus = (status: string) => {
   }
 };
 
-// ✅ ส่วน "ข้อเสนอที่ฉันส่ง"
-function MyTradesSection({
-  trades,
-  currentUserProfileId,
-}: {
-  trades: Trade[];
-  currentUserProfileId: string;
-}) {
+function MyTradesSection({ trades, currentUserProfileId }: { trades: Trade[]; currentUserProfileId: string; }) {
   const myTrades = trades.filter((t) => t.offerBy.id === currentUserProfileId);
-
   if (myTrades.length === 0) {
     return <p className="text-gray-500">ยังไม่มีข้อเสนอที่คุณส่ง</p>;
   }
-
   return (
     <div className="space-y-4">
       {myTrades.map((trade) => (
@@ -134,7 +116,6 @@ function MyTradesSection({
             </div>
             <div className="text-sm text-gray-500">{new Date(trade.createdAt).toLocaleDateString()}</div>
           </div>
-
           <div className="text-gray-700 text-sm space-y-1">
             <p>
               <span className="font-medium">ของที่คุณเสนอ: </span>
@@ -161,12 +142,8 @@ function MyTradesSection({
               <span className={getStatusStyle(trade.status)}>{translateStatus(trade.status)}</span>
             </p>
           </div>
-
           <div className="mt-3">
-            <Link
-              href={`/chat/${trade.id}`}
-              className="inline-flex items-center gap-1 text-blue-600 hover:underline text-sm font-medium"
-            >
+            <Link href={`/chat/${trade.id}`} className="inline-flex items-center gap-1 text-blue-600 hover:underline text-sm font-medium">
               <MdOutlineChat className="text-lg" />
               พูดคุย
             </Link>
@@ -177,20 +154,11 @@ function MyTradesSection({
   );
 }
 
-// ✅ ส่วน "ข้อเสนอที่ฉันได้รับ"
-function OffersSection({
-  trades,
-  currentUserProfileId,
-}: {
-  trades: Trade[];
-  currentUserProfileId: string;
-}) {
+function OffersSection({ trades, currentUserProfileId }: { trades: Trade[]; currentUserProfileId: string; }) {
   const receivedOffers = trades.filter((t) => t.offerTo.id === currentUserProfileId);
-
   if (receivedOffers.length === 0) {
     return <p className="text-gray-500">ยังไม่มีข้อเสนอที่คุณได้รับ</p>;
   }
-
   return (
     <div className="space-y-4">
       {receivedOffers.map((offer) => (
@@ -213,7 +181,6 @@ function OffersSection({
             </div>
             <div className="text-sm text-gray-500">{new Date(offer.createdAt).toLocaleDateString()}</div>
           </div>
-
           <div className="text-gray-700 text-sm space-y-1">
             <p>
               <span className="font-medium">ของที่เสนอ: </span>
@@ -240,12 +207,28 @@ function OffersSection({
               <span className={getStatusStyle(offer.status)}>{translateStatus(offer.status)}</span>
             </p>
           </div>
-
+          {offer.status === "PENDING" && (
+            <div className="mt-3 flex gap-2">
+              {/* Form สำหรับ "ยอมรับ" (Accept) */}
+              <form action={updateTradeStatusAction} method="post" className="inline">
+                <input type="hidden" name="tradeId" value={offer.id} />
+                <input type="hidden" name="newStatus" value="ACCEPTED" />
+                <button type="submit" className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm">
+                  ยอมรับ
+                </button>
+              </form>
+              {/* Form สำหรับ "ปฏิเสธ" (Reject) */}
+              <form action={updateTradeStatusAction} method="post" className="inline">
+                <input type="hidden" name="tradeId" value={offer.id} />
+                <input type="hidden" name="newStatus" value="REJECTED" />
+                <button type="submit" className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm">
+                  ปฏิเสธ
+                </button>
+              </form>
+            </div>
+          )}
           <div className="mt-3">
-            <Link
-              href={`/chat/${offer.id}`}
-              className="inline-flex items-center gap-1 text-blue-600 hover:underline text-sm font-medium"
-            >
+            <Link href={`/chat/${offer.id}`} className="inline-flex items-center gap-1 text-blue-600 hover:underline text-sm font-medium">
               <MdOutlineChat className="text-lg" />
               พูดคุย
             </Link>
@@ -256,12 +239,10 @@ function OffersSection({
   );
 }
 
-// ✅ ส่วน "รายการโปรด"
 function FavoritesSection({ favorites }: { favorites: Favorite[] }) {
   if (!favorites || favorites.length === 0) {
     return <p className="text-gray-500">ยังไม่มีรายการโปรด</p>;
   }
-
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {favorites.map((fav) => (
@@ -287,12 +268,10 @@ function FavoritesSection({ favorites }: { favorites: Favorite[] }) {
   );
 }
 
-// ✅ ส่วน "การแจ้งเตือน"
 function NotificationsSection({ notifications }: { notifications: Notification[] }) {
   if (!notifications || notifications.length === 0) {
     return <p className="text-gray-500">ไม่มีการแจ้งเตือน</p>;
   }
-
   return (
     <div className="space-y-3">
       {notifications.map((notif) => (
@@ -304,9 +283,7 @@ function NotificationsSection({ notifications }: { notifications: Notification[]
         >
           <div>
             <p className="text-gray-700 text-sm">{notif.message}</p>
-            <p className="text-xs text-gray-400 mt-1">
-              {new Date(notif.createdAt).toLocaleString()}
-            </p>
+            <p className="text-xs text-gray-400 mt-1">{new Date(notif.createdAt).toLocaleString()}</p>
           </div>
         </div>
       ))}

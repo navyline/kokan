@@ -22,7 +22,11 @@ export const getFavorites = async () => {
     return favorites.map((fav) => ({
       id: fav.post.id,
       name: fav.post.name,
-      image: fav.post.image,
+      // แก้: ใช้ fav.post.images[0] แทน fav.post.image (หากมีรูปอยู่)
+      image:
+        fav.post.images && fav.post.images.length > 0
+          ? fav.post.images[0]
+          : "/default-image.jpg",
       province: fav.post.province,
       price: fav.post.price,
     }));

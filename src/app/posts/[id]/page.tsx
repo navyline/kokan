@@ -44,19 +44,14 @@ interface PostDetailType {
   }[];
 }
 
-// แนวทางที่ 1: รองรับทั้ง object หรือ Promise
+// กำหนด type ของ props ให้รองรับทั้ง object หรือ Promise
 interface PostDetailProps {
   params: { id: string } | Promise<{ id: string }>;
 }
 
-// หรือ แนวทางที่ 2: กำหนดเป็น Promise โดยตรง
-// interface PostDetailProps {
-//   params: Promise<{ id: string }>;
-// }
-
 export default async function PostDetail({ params }: PostDetailProps) {
-  // await params ก่อนใช้งาน เพื่อให้แน่ใจว่าเราได้ค่า object กลับมาแล้ว
-  const { id } = await params;
+  // ใช้ Promise.resolve() เพื่อให้แน่ใจว่า params เป็น Promise เสมอ
+  const { id } = await Promise.resolve(params);
   
   const post = await fetchPostDetail({ id });
   if (!post) {
@@ -75,8 +70,7 @@ export default async function PostDetail({ params }: PostDetailProps) {
     id: post.id,
     name: post.name,
     description: post.description,
-    images:
-      post.images && post.images.length > 0 ? post.images : ["/default-image.jpg"],
+    images: post.images && post.images.length > 0 ? post.images : ["/default-image.jpg"],
     province: post.province,
     lat: post.lat ?? undefined,
     lng: post.lng ?? undefined,

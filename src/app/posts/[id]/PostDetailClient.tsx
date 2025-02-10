@@ -48,7 +48,7 @@ interface PostType {
   comments: Comment[];
   category?: {
     name: string;
-  };
+  } | null; // Allow category to be null
   condition: string;
 }
 

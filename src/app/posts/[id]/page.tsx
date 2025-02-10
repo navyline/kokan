@@ -27,7 +27,7 @@ interface PostDetailType {
     email: string | null;
     profileImage: string | null;
   };
-  category: { id: string; name: string } | null; // Ensure this matches PostType
+  category: { id: string; name: string } | null;
   status: string;
   comments: {
     id: string;
@@ -49,7 +49,9 @@ interface PostDetailProps {
 }
 
 export default async function PostDetail({ params }: PostDetailProps) {
-  const { id } = params;
+  // await params ก่อนใช้งาน เพื่อแก้ปัญหา sync-dynamic-apis
+  const { id } = await params;
+  
   const post = await fetchPostDetail({ id });
   if (!post) {
     notFound();
@@ -73,12 +75,11 @@ export default async function PostDetail({ params }: PostDetailProps) {
     lat: post.lat ?? undefined,
     lng: post.lng ?? undefined,
     price: post.price,
-    condition: post.condition, // Assumes post.condition exists from the DB
+    condition: post.condition,
     createdAt: post.createdAt.toISOString(),
     updatedAt: post.updatedAt.toISOString(),
     views: post.views,
     tags: post.tags,
-    // หาก query include relation profile แล้ว จะมีข้อมูลใน post.profile; หากไม่ ให้ fallback โดยใช้ post.profileId
     profile: post.profile || {
       id: post.profileId,
       clerkId: "",
@@ -88,7 +89,6 @@ export default async function PostDetail({ params }: PostDetailProps) {
       email: null,
       profileImage: "/default-profile.png",
     },
-    // สำหรับ category: หากไม่มีข้อมูลใน post.category ให้ fallback โดยใช้ post.categoryId
     category: post.categoryId ? { id: post.categoryId, name: "" } : null,
     status: post.status,
     comments: (post.comments || []).map((c) => ({

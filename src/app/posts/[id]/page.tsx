@@ -1,9 +1,11 @@
+// src/app/posts/[id]/page.tsx
+
 import { notFound } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";
 import { fetchPostDetail, fetchUserItems } from "./actions";
 import PostDetailClient from "./PostDetailClient";
 
-// กำหนด interface สำหรับโพสต์ที่มีรายละเอียดครบถ้วน
+// กำหนด interface สำหรับรายละเอียดของโพสต์
 interface PostDetailType {
   id: string;
   name: string;
@@ -44,33 +46,36 @@ interface PostDetailType {
   }[];
 }
 
-// กำหนด type ของ props ให้รองรับทั้ง object หรือ Promise
+// กำหนด type ของ props โดยระบุว่า params เป็น Promise ของ object ที่มี id เป็น string
 interface PostDetailProps {
-  params: { id: string } | Promise<{ id: string }>;
+  params: Promise<{ id: string }>;
 }
 
+// หน้า PostDetail เป็น async component ที่รอค่า params ก่อนใช้งาน
 export default async function PostDetail({ params }: PostDetailProps) {
-  // ใช้ Promise.resolve() เพื่อให้แน่ใจว่า params เป็น Promise เสมอ
-  const { id } = await Promise.resolve(params);
-  
+  // รอให้ params ถูก resolve เพื่อดึงค่า id
+  const { id } = await params;
+
+  // ดึงข้อมูลโพสต์จากฐานข้อมูลตาม id ที่ได้รับ
   const post = await fetchPostDetail({ id });
   if (!post) {
     notFound();
   }
 
-  // ดึงข้อมูล user ปัจจุบัน
+  // ดึงข้อมูลผู้ใช้งานปัจจุบัน
   const user = await currentUser();
   const currentUserId = user?.id;
 
-  // ดึงรายการโพสต์ของ user (สำหรับการเสนอแลกเปลี่ยน)
+  // ดึงรายการโพสต์ของผู้ใช้งาน (สำหรับการแลกเปลี่ยน เป็นต้น)
   const userItems = await fetchUserItems();
 
-  // แปลงข้อมูลจากฐานข้อมูลให้ตรงกับ PostDetailType
+  // แปลงข้อมูลจากฐานข้อมูลให้ตรงกับ interface PostDetailType
   const transformedPost: PostDetailType = {
     id: post.id,
     name: post.name,
     description: post.description,
-    images: post.images && post.images.length > 0 ? post.images : ["/default-image.jpg"],
+    images:
+      post.images && post.images.length > 0 ? post.images : ["/default-image.jpg"],
     province: post.province,
     lat: post.lat ?? undefined,
     lng: post.lng ?? undefined,
@@ -106,6 +111,7 @@ export default async function PostDetail({ params }: PostDetailProps) {
     })),
   };
 
+  // ส่งข้อมูลไปยัง client component เพื่อ render หน้าโพสต์
   return (
     <PostDetailClient
       post={transformedPost}

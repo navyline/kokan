@@ -28,11 +28,11 @@ export default function CreatePost() {
     { value: "6a8c3948-512b-407c-9497-cb6b0825b60f", label: "Sports Equipment" },
     { value: "0a2760d2-15d3-4f44-9118-3495b9d8ef07", label: "Other" },
   ];
-  
+
   const conditions = [
     { value: "NEW", label: "New" },
     { value: "USED", label: "Used" },
-    { value: "REFURBISHED", label: "Refurbished" }
+    { value: "REFURBISHED", label: "Refurbished" },
   ];
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,9 +52,7 @@ export default function CreatePost() {
     setLoading(true);
     setError(null);
 
-    // สร้าง FormData จากฟอร์ม (ฟิลด์อื่น ๆ จะถูกรวมอัตโนมัติ)
     const formData = new FormData(event.currentTarget);
-    // Append ไฟล์ภาพจาก state ลงใน FormData
     files.forEach((file) => formData.append("images", file));
 
     try {
@@ -69,34 +67,46 @@ export default function CreatePost() {
   };
 
   return (
-    <section className="p-4 sm:p-8 bg-gradient-to-r from-green-100 via-blue-100 to-purple-100 min-h-screen flex justify-center items-center">
-      <div className="bg-white shadow-lg rounded-xl p-4 sm:p-8 w-full max-w-2xl border border-gray-200">
-        <h1 className="text-3xl font-extrabold text-center mb-8 bg-gradient-to-r from-blue-500 to-purple-500 text-transparent bg-clip-text">
+    <section className="p-4 sm:p-8 min-h-screen flex justify-center items-center bg-gradient-to-br from-blue-100 via-purple-50 to-purple-100">
+      <div className="bg-white shadow-2xl rounded-2xl p-6 sm:p-8 w-full max-w-2xl border border-gray-200">
+        <h1 className="text-3xl font-extrabold text-center mb-2 bg-gradient-to-r from-blue-500 to-purple-500 text-transparent bg-clip-text">
           สร้างโพสต์ของคุณ
         </h1>
+        <p className="text-center text-gray-600 mb-8">
+          ระบุรายละเอียดสินค้าและข้อมูลที่จำเป็น
+          เพื่อให้ผู้อื่นสามารถเข้ามาดูและติดต่อคุณได้ง่าย
+        </p>
 
-        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+        {error && (
+          <p className="text-red-500 text-center mb-4 font-medium">{error}</p>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* ชื่อสินค้า */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">ชื่อสินค้า</label>
+            <label className="block text-sm font-medium text-gray-700">
+              ชื่อสินค้า
+            </label>
             <input
               type="text"
               name="name"
-              placeholder="คุณกำลังนำเสนออะไร?"
-              className="mt-2 block w-full border border-gray-300 rounded-lg p-3 shadow-sm focus:ring-blue-400 focus:border-blue-400"
+              placeholder="เช่น โทรศัพท์มือถือ, ตู้เย็น..."
+              className="mt-2 block w-full border border-gray-300 rounded-lg p-3 shadow-sm focus:ring-purple-400 focus:border-purple-400"
               required
             />
           </div>
 
+          {/* หมวดหมู่ */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">หมวดหมู่</label>
+            <label className="block text-sm font-medium text-gray-700">
+              หมวดหมู่
+            </label>
             <select
               name="category"
-              className="mt-2 block w-full border border-gray-300 rounded-lg p-3 shadow-sm focus:ring-blue-400 focus:border-blue-400"
+              className="mt-2 block w-full border border-gray-300 rounded-lg p-3 shadow-sm focus:ring-purple-400 focus:border-purple-400"
               required
             >
-              <option value="">Select a category</option>
+              <option value="">-- เลือกหมวดหมู่ --</option>
               {categories.map((category) => (
                 <option key={category.value} value={category.value}>
                   {category.label}
@@ -105,14 +115,17 @@ export default function CreatePost() {
             </select>
           </div>
 
+          {/* สภาพสินค้า */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">สภาพสินค้า</label>
+            <label className="block text-sm font-medium text-gray-700">
+              สภาพสินค้า
+            </label>
             <select
               name="condition"
-              className="mt-2 block w-full border border-gray-300 rounded-lg p-3 shadow-sm focus:ring-blue-400 focus:border-blue-400"
+              className="mt-2 block w-full border border-gray-300 rounded-lg p-3 shadow-sm focus:ring-purple-400 focus:border-purple-400"
               required
             >
-              <option value="">Select a condition</option>
+              <option value="">-- เลือกสภาพสินค้า --</option>
               {conditions.map((condition) => (
                 <option key={condition.value} value={condition.value}>
                   {condition.label}
@@ -121,92 +134,121 @@ export default function CreatePost() {
             </select>
           </div>
 
+          {/* รายละเอียดสินค้า */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">รายละเอียด</label>
+            <label className="block text-sm font-medium text-gray-700">
+              รายละเอียด
+            </label>
             <textarea
               name="description"
-              placeholder="ระบุรายละเอียดเกี่ยวกับสินค้า"
-              className="mt-2 block w-full border border-gray-300 rounded-lg p-3 shadow-sm focus:ring-blue-400 focus:border-blue-400"
+              placeholder="เช่น อธิบายลักษณะ, ยี่ห้อ, รุ่น, ปีที่ซื้อ..."
+              className="mt-2 block w-full border border-gray-300 rounded-lg p-3 shadow-sm focus:ring-purple-400 focus:border-purple-400"
               rows={5}
               required
             />
           </div>
 
+          {/* ราคา & จังหวัด */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700">ราคา (บาท)</label>
+              <label className="block text-sm font-medium text-gray-700">
+                ราคา (บาท)
+              </label>
               <input
                 type="number"
                 name="price"
-                placeholder="ระบุราคา"
-                className="mt-2 block w-full border border-gray-300 rounded-lg p-3 shadow-sm focus:ring-blue-400 focus:border-blue-400"
+                placeholder="ตัวอย่าง: 1500"
+                className="mt-2 block w-full border border-gray-300 rounded-lg p-3 shadow-sm focus:ring-purple-400 focus:border-purple-400"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">จังหวัด</label>
+              <label className="block text-sm font-medium text-gray-700">
+                จังหวัด
+              </label>
               <input
                 type="text"
                 name="province"
-                placeholder="ตัวอย่าง: กรุงเทพฯ"
-                className="mt-2 block w-full border border-gray-300 rounded-lg p-3 shadow-sm focus:ring-blue-400 focus:border-blue-400"
+                placeholder="เช่น กรุงเทพฯ, เชียงใหม่..."
+                className="mt-2 block w-full border border-gray-300 rounded-lg p-3 shadow-sm focus:ring-purple-400 focus:border-purple-400"
                 required
               />
             </div>
           </div>
 
-          {/* ส่วนอัปโหลดภาพ */}
-          <div
-            className="border-2 border-dashed border-purple-400 p-4 rounded-lg text-center cursor-pointer hover:bg-purple-50"
-            onClick={() => document.getElementById("image-upload")?.click()}
-          >
-            <p className="text-gray-500">ลากและวางรูปภาพที่นี่ หรือคลิกเพื่อเลือกไฟล์</p>
-            <input
-              id="image-upload"
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handleImageChange}
-              className="hidden"
-            />
+          {/* อัปโหลดภาพ */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              รูปสินค้า
+            </label>
+            <div
+              className="border-2 border-dashed border-purple-400 p-4 rounded-lg text-center cursor-pointer hover:bg-purple-50 transition relative"
+              onClick={() => document.getElementById("image-upload")?.click()}
+            >
+              <p className="text-gray-500 pointer-events-none">
+                ลากและวางรูปภาพที่นี่ <br />
+                หรือ{" "}
+                <span className="text-purple-500 font-semibold underline">
+                  คลิกเพื่อเลือกไฟล์
+                </span>
+              </p>
+              <input
+                id="image-upload"
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleImageChange}
+                className="hidden"
+              />
+            </div>
+
+            {/* แสดงภาพตัวอย่าง */}
+            {previewImages.length > 0 && (
+              <div className="flex flex-wrap gap-4 mt-4">
+                {previewImages.map((src, index) => (
+                  <div key={index} className="relative">
+                    <Image
+                      src={src}
+                      alt={`ภาพตัวอย่าง ${index + 1}`}
+                      className="object-cover rounded-lg border"
+                      width={80}
+                      height={80}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveImage(index)}
+                      className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          {previewImages.length > 0 && (
-            <div className="flex flex-wrap gap-4 mt-4">
-              {previewImages.map((src, index) => (
-                <div key={index} className="relative">
-                  <Image
-                    src={src}
-                    alt={`ภาพตัวอย่าง ${index + 1}`}
-                    className="object-cover rounded-lg border"
-                    width={80}
-                    height={80}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveImage(index)}
-                    className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center"
-                  >
-                    &times;
-                  </button>
-                </div>
-              ))}
+          {/* Map สำหรับระบุ lat/lng หรือจุดนัดหมาย */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              ระบุตำแหน่งหรือจุดนัดพบ (ถ้ามี)
+            </label>
+            <div className="rounded-lg overflow-hidden border border-gray-300">
+              <MapLandmark />
             </div>
-          )}
+          </div>
 
-          <MapLandmark />
-
+          {/* ปุ่ม Submit */}
           <button
             type="submit"
             className={`w-full text-white font-semibold py-3 rounded-lg transition shadow-md ${
               loading
                 ? "bg-gray-400 cursor-not-allowed"
-                : "bg-gradient-to-r from-blue-500 to-purple-500 hover:opacity-90"
+                : "bg-gradient-to-r from-purple-500 to-blue-500 hover:opacity-90"
             }`}
             disabled={loading}
           >
-            {loading ? "กำลังส่ง..." : "ส่งโพสต์ของคุณ"}
+            {loading ? "กำลังส่ง..." : "สร้างโพสต์"}
           </button>
         </form>
       </div>

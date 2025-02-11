@@ -115,7 +115,7 @@ export const startChat = async (receiverId: string) => {
     }
 
     // ส่ง URL ของหน้าที่แสดงแชท (สมมติว่าเราใช้ dynamic route /chat/[chatId])
-    return `/chat/${chat.id}`;
+    return `/chats`;
   } catch (error) {
     console.error("❌ Error starting chat:", error);
     return null;

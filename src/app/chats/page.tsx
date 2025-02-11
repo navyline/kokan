@@ -1,156 +1,147 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
-import { getUserChats, getMessages, sendMessage } from "./actions";
 import { useUser } from "@clerk/nextjs";
+import Image from "next/image";
+import {
+  getUserChats,
+  getMessages,
+  sendMessage,
+} from "./actions"; // <- import Server Actions ฝั่งเดียวกัน
+import { Chat, Message } from "@/utils/types"; // ลบการ import 'Profile' ออก เพราะไม่ได้ใช้งาน
 
-// ประเภทข้อมูลสำหรับห้องแชท (สำหรับ Sidebar)
-// หมายเหตุ: ใน messages เราไม่รวม sender เพราะใน Sidebar เราใช้แค่ข้อความล่าสุด
-type Chat = {
-  id: string;
-  creatorId: string;
-  receiverId: string;
-  messages: {
-    id: string;
-    chatId: string;
-    senderId: string;
-    content: string;
-    isRead: boolean;
-    createdAt: string; // หลังจากแปลงจาก Date เป็น string
-  }[];
-  creator: { id: string; userName: string; profileImage?: string | null };
-  receiver: { id: string; userName: string; profileImage?: string | null };
-};
+// สร้าง types สำหรับข้อมูลที่มาจากเซิร์ฟเวอร์ เพื่อหลีกเลี่ยงการใช้ explicit any
+interface ServerMessage extends Omit<Message, "createdAt"> {
+  createdAt: string | Date;
+}
 
-// ประเภทข้อมูลสำหรับข้อความในห้องสนทนา (Conversation)
-// ในส่วนนี้ messages จะมี sender info
-type Message = {
-  id: string;
-  content: string;
-  senderId: string;
-  createdAt: string;
-  sender: { userName: string; profileImage?: string | null };
-};
+interface ServerChat extends Omit<Chat, "createdAt" | "messages"> {
+  createdAt: string | Date;
+  messages?: ServerMessage[];
+}
 
-export default function ChatsPage() {
+export default function ChatPage() {
   const { user } = useUser();
-  // ใช้ property imageUrl จาก Clerk (หรือ fallback เป็น default-avatar)
-  const currentUserId = user?.id;
-  const currentUserProfileImage = user?.imageUrl || "/default-avatar.png";
-
   const [chats, setChats] = useState<Chat[]>([]);
-  const [selectedChat, setSelectedChat] = useState<string | null>(null);
+  const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [newMessage, setNewMessage] = useState("");
+  const [messageText, setMessageText] = useState("");
+  const [loadingMessages, setLoadingMessages] = useState(false);
 
-  // ดึงรายการห้องแชทเมื่อ component mount
+  // สำหรับเทียบว่าใครเป็นเรา (โดยใช้ profileId ของเรา)
+  const [myProfileId, setMyProfileId] = useState<string | null>(null);
+
+  // ดึง chats และแปลง createdAt ให้เป็น string (ISO) ถ้าจำเป็น
   useEffect(() => {
-    async function fetchChats() {
-      const data = await getUserChats();
-      // กำหนด type สำหรับข้อมูล raw เพื่อไม่ใช้ any
-      type RawMessage = {
-        id: string;
-        chatId: string;
-        senderId: string;
-        content: string;
-        isRead: boolean;
-        createdAt: Date;
-      };
-      type RawChat = {
-        id: string;
-        creatorId: string;
-        receiverId: string;
-        messages: RawMessage[];
-        creator: { id: string; userName: string; profileImage?: string | null };
-        receiver: { id: string; userName: string; profileImage?: string | null };
-      };
-      const transformed = data.map((chat: RawChat) => ({
+    async function fetchData() {
+      // 1) ดึงรายการ Chats
+      const userChats = (await getUserChats()) as ServerChat[];
+
+      // แปลง createdAt ในแต่ละ chat (และใน messages ภายใน chat) ให้เป็น ISO string
+      const transformedChats = userChats.map((chat: ServerChat): Chat => ({
         ...chat,
-        messages: chat.messages.map((msg: RawMessage) => ({
+        createdAt:
+          typeof chat.createdAt === "string"
+            ? chat.createdAt
+            : new Date(chat.createdAt).toISOString(),
+        messages: (chat.messages ?? []).map((msg: ServerMessage): Message => ({
           ...msg,
-          createdAt: new Date(msg.createdAt).toISOString(),
+          createdAt:
+            typeof msg.createdAt === "string"
+              ? msg.createdAt
+              : new Date(msg.createdAt).toISOString(),
         })),
       }));
-      setChats(transformed);
+
+      setChats(transformedChats);
+
+      // กำหนด myProfileId โดยดูจาก chat ตัวแรกที่มีข้อมูล (ขึ้นอยู่กับวิธีที่คุณต้องการใช้งาน)
+      if (transformedChats.length > 0 && user) {
+        const anyChat = transformedChats[0];
+        if (anyChat.creator?.clerkId === user.id) {
+          setMyProfileId(anyChat.creator.id);
+        } else if (anyChat.receiver?.clerkId === user.id) {
+          setMyProfileId(anyChat.receiver.id);
+        }
+      }
     }
-    fetchChats();
-  }, []);
+    fetchData();
+  }, [user]);
 
-  // เมื่อเลือกห้องแชท ให้ดึงข้อความของห้องนั้นมาแสดง พร้อมแปลง createdAt เป็น string
-  async function selectChat(chatId: string) {
-    setSelectedChat(chatId);
-    const data = await getMessages(chatId);
-    type RawMessage = {
-      id: string;
-      chatId: string;
-      senderId: string;
-      content: string;
-      isRead: boolean;
-      createdAt: Date;
-      sender: { userName: string; profileImage?: string | null };
-    };
-    const transformed = data.map((msg: RawMessage) => ({
-      id: msg.id,
-      content: msg.content,
-      senderId: msg.senderId,
-      createdAt: new Date(msg.createdAt).toISOString(),
-      sender: msg.sender,
+  // เมื่อเลือก chat แล้ว ให้โหลดข้อความ
+  useEffect(() => {
+    async function loadMessages() {
+      if (!selectedChat) return;
+      setLoadingMessages(true);
+      const msgs = (await getMessages(selectedChat.id)) as ServerMessage[];
+      const transformedMsgs = msgs.map((msg: ServerMessage): Message => ({
+        ...msg,
+        createdAt:
+          typeof msg.createdAt === "string"
+            ? msg.createdAt
+            : new Date(msg.createdAt).toISOString(),
+      }));
+      setMessages(transformedMsgs);
+      setLoadingMessages(false);
+    }
+    loadMessages();
+  }, [selectedChat]);
+
+  // ฟังก์ชันเลือกแชท
+  const handleSelectChat = (chat: Chat) => {
+    setSelectedChat(chat);
+  };
+
+  // ฟังก์ชันส่งข้อความ
+  const handleSendMessage = async () => {
+    if (!selectedChat || !messageText.trim()) return;
+    await sendMessage(selectedChat.id, messageText.trim());
+    setMessageText("");
+
+    // โหลดข้อความใหม่หลังส่ง หรือจะ push เข้า state ก็ได้
+    const msgs = (await getMessages(selectedChat.id)) as ServerMessage[];
+    const transformedMsgs = msgs.map((msg: ServerMessage): Message => ({
+      ...msg,
+      createdAt:
+        typeof msg.createdAt === "string"
+          ? msg.createdAt
+          : new Date(msg.createdAt).toISOString(),
     }));
-    setMessages(transformed);
-  }
-
-  // ส่งข้อความใหม่และอัปเดตรายการข้อความใน UI
-  async function handleSendMessage() {
-    if (!newMessage.trim() || !selectedChat) return;
-    await sendMessage(selectedChat, newMessage);
-    const newMsg: Message = {
-      id: Date.now().toString(), // สร้าง id ชั่วคราว
-      content: newMessage,
-      senderId: currentUserId || "",
-      createdAt: new Date().toISOString(),
-      sender: { userName: user?.fullName || "You", profileImage: currentUserProfileImage },
-    };
-    setMessages((prev) => [...prev, newMsg]);
-    setNewMessage("");
-  }
-
-  // คำนวณผู้ใช้อีกฝ่ายในห้องแชท (สำหรับ Sidebar)
-  function getOtherUser(chat: Chat) {
-    if (!currentUserId) return chat.creator;
-    return chat.creator.id === currentUserId ? chat.receiver : chat.creator;
-  }
-
-  // ฟังก์ชันสำหรับกลับไปยังรายการแชท (สำหรับมือถือ)
-  function handleBack() {
-    setSelectedChat(null);
-    setMessages([]);
-  }
+    setMessages(transformedMsgs);
+  };
 
   return (
-    <div className="flex flex-col md:flex-row h-screen">
-      {/* Sidebar: รายการห้องแชท */}
-      <div className={`md:w-1/3 border-r overflow-y-auto ${selectedChat ? "hidden md:block" : "block"}`}>
-        <h2 className="text-xl font-bold p-4 border-b">Chats</h2>
+    <div className="flex h-[calc(100vh-64px)]">
+      {/* Sidebar (ด้านซ้าย) */}
+      <div className="w-1/4 border-r border-gray-200 p-4 overflow-y-auto">
+        <h2 className="text-xl font-semibold mb-4">Chats</h2>
         {chats.map((chat) => {
-          const otherUser = getOtherUser(chat);
+          // หาว่าใครเป็นผู้สร้าง และอีกฝ่ายเป็นใคร
+          const isCreatorMe = chat.creatorId === myProfileId;
+          const otherUser = isCreatorMe ? chat.receiver : chat.creator;
+          const lastMessage = chat.messages?.[0];
+
           return (
             <div
               key={chat.id}
-              className="p-4 border-b cursor-pointer hover:bg-gray-100 flex items-center"
-              onClick={() => selectChat(chat.id)}
+              onClick={() => handleSelectChat(chat)}
+              className={`flex items-center p-2 mb-2 rounded cursor-pointer hover:bg-gray-100 transition ${
+                selectedChat?.id === chat.id ? "bg-gray-100" : ""
+              }`}
             >
               <Image
-                src={otherUser.profileImage || "/default-avatar.png"}
-                alt={otherUser.userName}
+                src={otherUser?.profileImage ?? "/default-profile.png"}
+                alt={otherUser?.userName || "User"}
                 width={40}
                 height={40}
-                className="w-10 h-10 rounded-full mr-3"
+                className="rounded-full border border-gray-300 object-cover"
               />
-              <div>
-                <p className="font-semibold">{otherUser.userName}</p>
-                <p className="text-sm text-gray-500">
-                  {chat.messages[0]?.content || "No messages yet"}
+              <div className="ml-3">
+                <p className="font-medium text-gray-700">
+                  {otherUser?.userName || "Unnamed"}
+                </p>
+                <p className="text-sm text-gray-500 truncate max-w-[180px]">
+                  {lastMessage?.content || ""}
                 </p>
               </div>
             </div>
@@ -158,75 +149,98 @@ export default function ChatsPage() {
         })}
       </div>
 
-      {/* ส่วนของแชทคอนเวอร์เซชัน */}
-      <div className="md:w-2/3 flex flex-col w-full">
-        {selectedChat ? (
-          <>
-            <div className="p-4 border-b bg-gray-100 flex items-center md:justify-between">
-              {/* ปุ่ม Back สำหรับมือถือ */}
-              <button onClick={handleBack} className="mr-4 md:hidden text-blue-500">
-                ← Back
-              </button>
-              <h2 className="text-xl font-bold">Conversation</h2>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {messages.map((msg, index) => {
-                const isCurrentUser = String(msg.senderId) === String(currentUserId);
-                return (
+      {/* Main Chat Area (ด้านขวา) */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <div className="px-4 py-2 border-b border-gray-200">
+          <h2 className="text-lg font-semibold">
+            {selectedChat
+              ? "Conversation"
+              : "Select a chat to start conversation"}
+          </h2>
+        </div>
+
+        {/* Messages Area */}
+        <div className="flex-1 overflow-y-auto bg-gray-50 p-4">
+          {loadingMessages ? (
+            <p className="text-gray-500">Loading messages...</p>
+          ) : !selectedChat ? (
+            <p className="text-gray-500">No chat selected.</p>
+          ) : (
+            messages.map((msg) => {
+              const isMe = msg.senderId === myProfileId;
+              return (
+                <div
+                  key={msg.id}
+                  className={`mb-2 flex items-end ${
+                    isMe ? "justify-end" : "justify-start"
+                  }`}
+                >
+                  {/* ถ้าไม่ใช่เรา ให้แสดงรูปโปรไฟล์ด้านซ้าย */}
+                  {!isMe && (
+                    <Image
+                      src={msg.sender?.profileImage || "/default-profile.png"}
+                      alt={msg.sender?.userName || "User"}
+                      width={32}
+                      height={32}
+                      className="rounded-full border border-gray-300 mr-2"
+                    />
+                  )}
+
+                  {/* ข้อความ (Bubble) */}
                   <div
-                    key={index}
-                    className={`flex items-center space-x-2 ${
-                      isCurrentUser ? "justify-end flex-row-reverse" : "justify-start"
+                    className={`max-w-xs px-3 py-2 rounded-lg shadow ${
+                      isMe
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-200 text-gray-700"
                     }`}
                   >
-                    <Image
-                      src={
-                        isCurrentUser
-                          ? currentUserProfileImage
-                          : msg.sender.profileImage || "/default-avatar.png"
-                      }
-                      alt={isCurrentUser ? (user?.fullName || "You") : msg.sender.userName}
-                      width={40}
-                      height={40}
-                      className="w-8 h-8 rounded-full"
-                    />
-                    <div className="flex flex-col">
-                      <div
-                        className={`inline-block p-3 rounded-lg ${
-                          isCurrentUser
-                            ? "bg-blue-500 text-white text-right"
-                            : "bg-gray-200 text-gray-900 text-left"
-                        }`}
-                      >
-                        <p>{msg.content}</p>
-                      </div>
-                      <span className={`text-xs mt-1 ${isCurrentUser ? "text-right" : "text-left"} text-gray-600`}>
-                        {new Date(msg.createdAt).toLocaleTimeString()}
-                      </span>
-                    </div>
+                    <p className="text-sm mb-1">{msg.content}</p>
+                    <span className="text-xs opacity-70">
+                      {new Date(msg.createdAt).toLocaleTimeString()}
+                    </span>
                   </div>
-                );
-              })}
-            </div>
-            <div className="p-4 border-t flex">
+
+                  {/* ถ้าเป็นข้อความของเรา ให้แสดงรูปโปรไฟล์ด้านขวา */}
+                  {isMe && (
+                    <Image
+                      src={msg.sender?.profileImage || "/default-profile.png"}
+                      alt={msg.sender?.userName || "Me"}
+                      width={32}
+                      height={32}
+                      className="rounded-full border border-gray-300 ml-2"
+                    />
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Input Area */}
+        {selectedChat && (
+          <div className="border-t border-gray-200 p-4">
+            <div className="flex items-center gap-2">
               <input
+                className="flex-1 border border-gray-300 rounded px-3 py-2 focus:outline-none"
                 type="text"
-                className="border rounded p-2 flex-1"
-                placeholder="Type your message..."
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder="Type a message..."
+                value={messageText}
+                onChange={(e) => setMessageText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
+                }}
               />
               <button
-                className="bg-blue-500 text-white px-4 ml-2 rounded"
                 onClick={handleSendMessage}
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
               >
                 Send
               </button>
             </div>
-          </>
-        ) : (
-          <div className="flex-1 flex items-center justify-center text-gray-500">
-            <p>Select a chat to start messaging</p>
           </div>
         )}
       </div>

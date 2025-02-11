@@ -143,7 +143,7 @@ function MyTradesSection({ trades, currentUserProfileId }: { trades: Trade[]; cu
             </p>
           </div>
           <div className="mt-3">
-            <Link href={`/chat/${trade.id}`} className="inline-flex items-center gap-1 text-blue-600 hover:underline text-sm font-medium">
+            <Link href={`/chats`} className="inline-flex items-center gap-1 text-blue-600 hover:underline text-sm font-medium">
               <MdOutlineChat className="text-lg" />
               พูดคุย
             </Link>
@@ -228,7 +228,7 @@ function OffersSection({ trades, currentUserProfileId }: { trades: Trade[]; curr
             </div>
           )}
           <div className="mt-3">
-            <Link href={`/chat/${offer.id}`} className="inline-flex items-center gap-1 text-blue-600 hover:underline text-sm font-medium">
+            <Link href={`/chats`} className="inline-flex items-center gap-1 text-blue-600 hover:underline text-sm font-medium">
               <MdOutlineChat className="text-lg" />
               พูดคุย
             </Link>

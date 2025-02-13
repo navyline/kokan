@@ -12,17 +12,20 @@ export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // รับค่า search จาก URL (เช่น ?search=xxxxx)
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("search") || "";
 
-  // ดึงข้อมูล Posts และ Categories
+  // ดึง Posts และ Categories
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // หากต้องการให้มีการค้นหาด้วย searchQuery ด้วย
-        // ให้เพิ่มการส่ง searchQuery ไปใน fetchPostsAction ได้
-        const postsData = await fetchPostsAction(selectedCategory);
+        // เรียก fetchPostsAction โดยส่ง searchQuery และ selectedCategory
+        const postsData = await fetchPostsAction({
+          categoryId: selectedCategory,
+          searchQuery, // ⬅️ เพิ่มบรรทัดนี้
+        });
         setPosts(postsData);
 
         const categoriesData = await fetchCategories();
@@ -44,19 +47,17 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-gray-50 pt-24">
       <div className="container mx-auto px-6 max-w-7xl">
-        {/* ส่วนหัวข้อ */}
+
+        {/* หัวข้อ */}
         <h1 className="text-4xl font-bold text-gray-800 mb-4 text-center">
           {searchQuery ? `Results for "${searchQuery}"` : "Trending Posts"}
         </h1>
-
-        {/* คำอธิบายเล็ก ๆ ด้านล่างหัวข้อ ถ้าอยากให้มี */}
         <p className="text-center text-gray-600 mb-10">
-          เลือกหมวดหมู่ที่ต้องการ หรือเริ่มค้นหาเพื่อดูโพสต์ทั้งหมด
+          เลือกหมวดหมู่ หรือพิมพ์คำค้นหาเพื่อดูโพสต์ทั้งหมด
         </p>
 
-        {/* แสดงเมนูประเภท (Categories) แบบปุ่ม */}
+        {/* เมนูหมวดหมู่ (Categories) */}
         <div className="flex gap-4 justify-center mb-8 flex-wrap">
-          {/* ปุ่ม All */}
           <button
             onClick={() => handleCategoryClick(null)}
             className={`px-4 py-2 rounded-full text-sm border transition 
@@ -68,7 +69,6 @@ export default function HomePage() {
           >
             All
           </button>
-          {/* ปุ่ม Category */}
           {categories.map((category) => (
             <button
               key={category.id}
@@ -85,8 +85,9 @@ export default function HomePage() {
           ))}
         </div>
 
-        {/* ส่วนแสดง Posts หรือ Skeleton Loading */}
+        {/* แสดง Posts */}
         {loading ? (
+          // Skeleton Loading
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {[...Array(8)].map((_, index) => (
               <div
@@ -101,9 +102,7 @@ export default function HomePage() {
               posts.map((post) => <PostCard key={post.id} post={post} />)
             ) : (
               <p className="text-gray-500 text-center col-span-full">
-                {searchQuery
-                  ? "No results found."
-                  : "No posts available."}
+                {searchQuery ? "No results found." : "No posts available."}
               </p>
             )}
           </div>

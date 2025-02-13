@@ -3,18 +3,68 @@
 import db from "@/utils/db";
 import { Post } from "@/utils/types";
 
-/**
- * ดึงโพสต์ทั้งหมดจากฐานข้อมูล โดยสามารถกรองตาม Category ได้
- */
-export async function fetchPostsAction(categoryId: string | null = null): Promise<Post[]> {
+interface FetchPostsParams {
+  categoryId?: string | null;
+  searchQuery?: string; // เพิ่มพารามิเตอร์สำหรับการค้นหา
+}
+
+export async function fetchPostsAction({
+  categoryId,
+  searchQuery,
+}: FetchPostsParams): Promise<Post[]> {
   try {
     if (!db) {
       console.error("❌ Database instance is not available.");
       throw new Error("Database connection error");
     }
 
+    // สร้างเงื่อนไข (where) เพื่อกรองข้อมูล
+    const whereClause: {
+      categoryId?: string;
+      OR?: Array<{
+        name?: { contains: string; mode: "insensitive" };
+        description?: { contains: string; mode: "insensitive" };
+      }>;
+    } = {};
+
+    // กรองตาม category
+    if (categoryId) {
+      whereClause.categoryId = categoryId;
+    }
+
+    // กรองตามข้อความที่ค้นหา (searchQuery) ด้วย OR เช่น ตรวจชื่อโพสต์ หรือรายละเอียดโพสต์
+    if (searchQuery) {
+      whereClause.OR = [
+        {
+          name: {
+            contains: searchQuery,
+            mode: "insensitive",
+          },
+        },
+        {
+          description: {
+            contains: searchQuery,
+            mode: "insensitive",
+          },
+        },
+        // จะขยายไปค้นหาใน field อื่น (เช่น province, tags) ก็ได้ เช่น:
+        // {
+        //   province: {
+        //     contains: searchQuery,
+        //     mode: "insensitive",
+        //   },
+        // },
+        // {
+        //   tags: {
+        //     has: searchQuery, // ถ้าเป็น array
+        //   },
+        // },
+      ];
+    }
+
+    // ดึง posts ตามเงื่อนไข
     const posts = await db.post.findMany({
-      where: categoryId ? { categoryId } : {},
+      where: whereClause,
       include: {
         profile: {
           select: {
@@ -37,10 +87,11 @@ export async function fetchPostsAction(categoryId: string | null = null): Promis
       },
     });
 
+    // map ข้อมูลให้อยู่ในรูปแบบที่ต้องการ
     return posts.map((post) => ({
       id: post.id,
       name: post.name,
-      images: post.images || [], // ✅ ใช้ images แทน image
+      images: post.images || [],
       description: post.description,
       province: post.province,
       price: post.price,
@@ -67,7 +118,7 @@ export async function fetchPostsAction(categoryId: string | null = null): Promis
 }
 
 /**
- * ดึงหมวดหมู่ทั้งหมดจากฐานข้อมูล
+ * ฟังก์ชันดึงหมวดหมู่
  */
 export async function fetchCategories() {
   try {

@@ -17,29 +17,9 @@ export default function LandingPageClient() {
 
   return (
     <div className="relative flex flex-col min-h-screen bg-gradient-to-br from-green-300 via-blue-300 to-purple-300 text-white overflow-hidden">
-      {/* ส่วน Navigation Bar */}
-      <nav className="bg-transparent flex items-center justify-between py-4 px-6 z-10 relative">
-        <div className="text-2xl font-bold tracking-wide">
-          แลกเปลี่ยนสินค้า
-        </div>
-        <div className="space-x-2">
-          <button
-            onClick={() => router.push("/sign-in")}
-            className="px-5 py-2 bg-white text-gray-800 rounded-md shadow-md hover:bg-gray-100 transition duration-200"
-          >
-            เข้าสู่ระบบ
-          </button>
-          <button
-            onClick={() => router.push("/sign-up")}
-            className="px-5 py-2 bg-blue-600 rounded-md shadow-md hover:bg-blue-700 transition duration-200"
-          >
-            สมัครสมาชิก
-          </button>
-        </div>
-      </nav>
 
       {/* ส่วน Hero Section */}
-      <div className="flex-grow flex items-center justify-center px-4 sm:px-6 lg:px-8">
+      <div className="flex-grow flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-10">
         <div className="max-w-3xl text-center">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-6 drop-shadow-lg">
             ยินดีต้อนรับสู่<br />
@@ -53,7 +33,7 @@ export default function LandingPageClient() {
             สามารถโพสต์ขาย หรือแลกเปลี่ยนสินค้าของคุณได้ง่าย ๆ
             พร้อมระบบแชทและการแจ้งเตือนในตัว
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="pb-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
               onClick={() => router.push("/sign-up")}
               className="px-8 py-3 bg-pink-500 rounded-md font-semibold hover:bg-pink-600 transition duration-200"

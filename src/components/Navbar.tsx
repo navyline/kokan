@@ -17,7 +17,7 @@ interface SidebarProps {
 
 function Logo() {
   return (
-    <Link href="/" className="flex items-center space-x-2">
+    <Link href="/home" className="flex items-center space-x-2">
       <div className="w-10 h-10 relative">
         <Image src="/logo.png" alt="Kokan Logo" layout="fill" objectFit="cover" className="rounded-full" />
       </div>

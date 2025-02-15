@@ -28,7 +28,10 @@ function Logo() {
 
 function CreatePostButton() {
   return (
-    <Link href="/posts/create" className="inline-flex items-center space-x-1 px-4 py-2 sm:px-5 sm:py-2 bg-teal-500 text-white rounded-full hover:bg-teal-600 transition shadow-md text-sm sm:text-base">
+    <Link
+      href="/posts/create"
+      className="inline-flex items-center space-x-1 px-4 py-2 sm:px-5 sm:py-2 bg-teal-500 text-white rounded-full hover:bg-teal-600 transition shadow-md text-sm sm:text-base"
+    >
       <PlusCircle className="h-5 w-5 sm:h-6 sm:w-6" />
       <span className="font-medium">สร้างโพส</span>
     </Link>
@@ -37,7 +40,10 @@ function CreatePostButton() {
 
 function ChatButton() {
   return (
-    <Link href="/chats" className="p-2 sm:p-3 text-gray-600 hover:text-teal-500 transition flex items-center justify-center">
+    <Link
+      href="/chats"
+      className="p-2 sm:p-3 text-gray-600 hover:text-teal-500 transition flex items-center justify-center"
+    >
       <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6" />
     </Link>
   );
@@ -71,18 +77,22 @@ export default function Navbar() {
 
       {/* Navbar */}
       <nav className="bg-white shadow-md">
-        <div className="relative flex items-center w-full px-4 py-2">
+        {/* ใช้ flex-wrap เพื่อให้คอนเทนต์ย้ายบรรทัดได้บนจอเล็ก */}
+        <div className="relative flex items-center w-full px-4 py-2 flex-wrap">
           
           {/* ซ้าย: ปุ่มเปิด Sidebar + Logo */}
           <div className="flex items-center space-x-4 w-auto">
-            <button onClick={() => setSidebarOpen(true)} className="p-2 text-gray-600 hover:text-teal-500 transition">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-2 text-gray-600 hover:text-teal-500 transition"
+            >
               <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
             </button>
             <Logo />
           </div>
 
-          {/* กลาง: Search ใช้ absolute + transform เพื่อให้อยู่ตรงกลาง */}
-          <div className="absolute left-1/2 transform -translate-x-1/2 w-full max-w-lg">
+          {/* กลาง: Search (ซ่อนบนจอเล็ก, แสดงบนจอใหญ่) */}
+          <div className="flex-1 hidden sm:flex justify-center">
             <Search />
           </div>
 
@@ -94,23 +104,34 @@ export default function Navbar() {
 
             {user ? (
               <Link href={`/profile/${localId}`} className="flex items-center space-x-2">
-                <Image src={user?.imageUrl || "/default-profile.png"} alt="Profile" width={32} height={32} className="h-8 w-8 rounded-full border border-gray-300 object-cover" />
-                <span className="hidden md:block text-gray-700 font-medium">{user?.firstName || "User"}</span>
+                <Image
+                  src={user?.imageUrl || "/default-profile.png"}
+                  alt="Profile"
+                  width={32}
+                  height={32}
+                  className="h-8 w-8 rounded-full border border-gray-300 object-cover"
+                />
+                <span className="hidden md:block text-gray-700 font-medium">
+                  {user?.firstName || "User"}
+                </span>
               </Link>
             ) : (
-              <Link href="/sign-in" className="inline-flex items-center bg-teal-500 text-white px-4 py-2 rounded-full hover:bg-teal-600 transition">
+              <Link
+                href="/sign-in"
+                className="inline-flex items-center bg-teal-500 text-white px-4 py-2 rounded-full hover:bg-teal-600 transition"
+              >
                 <LogIn className="h-5 w-5 sm:h-6 sm:w-6 mr-1" />
                 <span className="text-sm sm:text-base">Sign In</span>
               </Link>
             )}
           </div>
         </div>
-      </nav>
 
-      {/* แสดง Search ด้านล่างบนมือถือ (block sm:hidden) */}
-      <div className="block sm:hidden w-full px-4 pb-2">
-        <Search />
-      </div>
+        {/* แสดง Search แยกบรรทัดล่างบนมือถือ (block sm:hidden) */}
+        <div className="block sm:hidden w-full px-4 pb-2">
+          <Search />
+        </div>
+      </nav>
     </>
   );
 }
@@ -136,7 +157,10 @@ function Sidebar({ isOpen, onClose, localId }: SidebarProps) {
         {/* หัวข้อ Sidebar */}
         <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200">
           <h2 className="font-bold text-xl text-gray-800">เมนู</h2>
-          <button onClick={onClose} className="text-gray-600 hover:text-gray-800 text-xl transition">
+          <button
+            onClick={onClose}
+            className="text-gray-600 hover:text-gray-800 text-xl transition"
+          >
             ✕
           </button>
         </div>
@@ -161,9 +185,24 @@ function Sidebar({ isOpen, onClose, localId }: SidebarProps) {
           )}
 
           {/* เมนูทั่วไป */}
-          <Link href="/dashboard" className="block px-4 py-2 rounded-lg hover:bg-gray-100 transition">Dashboard</Link>
-          <Link href="/favorites" className="block px-4 py-2 rounded-lg hover:bg-gray-100 transition">My Favorites</Link>
-          <Link href="/settings" className="block px-4 py-2 rounded-lg hover:bg-gray-100 transition">Settings</Link>
+          <Link
+            href="/dashboard"
+            className="block px-4 py-2 rounded-lg hover:bg-gray-100 transition"
+          >
+            Dashboard
+          </Link>
+          <Link
+            href="/favorites"
+            className="block px-4 py-2 rounded-lg hover:bg-gray-100 transition"
+          >
+            My Favorites
+          </Link>
+          <Link
+            href="/settings"
+            className="block px-4 py-2 rounded-lg hover:bg-gray-100 transition"
+          >
+            Settings
+          </Link>
 
           {/* Logout */}
           <SignOutButton redirectUrl="/">

@@ -5,19 +5,23 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function LandingPageClient() {
-  const { user } = useUser();
+  const { isLoaded, user } = useUser();
   const router = useRouter();
 
-  // หากผู้ใช้ล็อกอินแล้ว ให้เปลี่ยนหน้าอัตโนมัติไป /home
+  // เมื่อโหลดข้อมูลผู้ใช้เสร็จแล้ว และพบว่าผู้ใช้ล็อกอินอยู่ ให้ redirect ไป /home
   useEffect(() => {
-    if (user) {
-      router.push("/home");
+    if (isLoaded && user) {
+      router.replace("/home");
     }
-  }, [user, router]);
+  }, [isLoaded, user, router]);
+
+  // หากข้อมูลผู้ใช้ยังไม่โหลดหรือมีผู้ใช้อยู่แล้ว ไม่ต้องแสดงหน้า Landing Page
+  if (!isLoaded || user) {
+    return null;
+  }
 
   return (
     <div className="relative flex flex-col min-h-screen bg-gradient-to-br from-green-300 via-blue-300 to-purple-300 text-white overflow-hidden">
-
       {/* ส่วน Hero Section */}
       <div className="flex-grow flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-10">
         <div className="max-w-3xl text-center">
@@ -26,10 +30,10 @@ export default function LandingPageClient() {
             <span className="text-white">ระบบแลกเปลี่ยนสินค้าออนไลน์</span>
           </h1>
           <p className="text-lg sm:text-xl text-white/90 mb-8 leading-relaxed">
-            เว็บไซต์ที่จะช่วยให้คุณสามารถแลกเปลี่ยนสินค้าได้อย่าง
+            เว็บไซต์ที่จะช่วยให้คุณสามารถแลกเปลี่ยนสินค้าได้อย่าง{" "}
             <span className="font-semibold text-white">
               สะดวก รวดเร็ว และปลอดภัย
-            </span>
+            </span>{" "}
             สามารถโพสต์ขาย หรือแลกเปลี่ยนสินค้าของคุณได้ง่าย ๆ
             พร้อมระบบแชทและการแจ้งเตือนในตัว
           </p>

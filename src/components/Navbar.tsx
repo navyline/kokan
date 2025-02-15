@@ -9,9 +9,11 @@ import { getLocalIdByClerkId } from "@/app/actions/getLocalId";
 import NotificationMenu from "./NotificationMenu";
 import Search from "./Search";
 
-/* ---------------------- */
-/*      Memoized Components       */
-/* ---------------------- */
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+  localId: string | null;
+}
 
 // Logo Component (memoized) พร้อมโหลดภาพด้วย priority
 const Logo = memo(function Logo() {
@@ -57,7 +59,7 @@ const ChatButton = memo(function ChatButton() {
 });
 
 // Sidebar Component (memoized)
-const Sidebar = memo(function Sidebar({ isOpen, onClose, localId }) {
+const Sidebar = memo(function Sidebar({ isOpen, onClose, localId }: SidebarProps) {
   return (
     <>
       {/* Backdrop เมื่อ Sidebar เปิด */}

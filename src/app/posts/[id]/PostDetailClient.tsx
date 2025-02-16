@@ -1,16 +1,16 @@
 "use client";
 
+import React, {
+  useState,
+  useCallback,
+  useTransition,
+  memo,
+  useMemo,
+} from "react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
-import { useState, useTransition } from "react";
-import {
-  FaMapMarkerAlt,
-  FaClock,
-  FaHeart,
-  FaExchangeAlt,
-  FaCog,
-} from "react-icons/fa";
 import Link from "next/link";
+import { FaMapMarkerAlt, FaClock, FaHeart, FaExchangeAlt, FaCog } from "react-icons/fa";
 import { formatDistance } from "date-fns/formatDistance";
 import { enUS } from "date-fns/locale";
 
@@ -48,7 +48,7 @@ interface PostType {
   comments: Comment[];
   category?: {
     name: string;
-  } | null; // Allow category to be null
+  } | null;
   condition: string;
 }
 
@@ -64,7 +64,13 @@ interface PostDetailClientProps {
   userItems?: UserItem[];
 }
 
-export default function PostDetailClient({
+/**
+ * PostDetailClient:
+ * - หากเป็นเจ้าของโพสต์ (isOwner) จะแสดงปุ่ม Edit Post แทน Favorite/Make an Offer
+ * - ใช้ useCallback เพื่อลดการสร้างฟังก์ชันใหม่ซ้ำๆ
+ * - Memoize ตัวคอมโพเนนต์หลักด้วย React.memo
+ */
+function PostDetailClientRaw({
   post,
   currentUserId,
   userItems = [],
@@ -73,13 +79,15 @@ export default function PostDetailClient({
   const isOwner = currentUserId === post.profile.id;
 
   // แปลงเวลา (date-fns)
-  const formattedTime =
-    post.createdAt && !isNaN(new Date(post.createdAt).getTime())
-      ? formatDistance(new Date(post.createdAt), new Date(), {
-          addSuffix: true,
-          locale: enUS,
-        })
-      : "Unknown time";
+  const formattedTime = useMemo(() => {
+    if (post.createdAt && !isNaN(new Date(post.createdAt).getTime())) {
+      return formatDistance(new Date(post.createdAt), new Date(), {
+        addSuffix: true,
+        locale: enUS,
+      });
+    }
+    return "Unknown time";
+  }, [post.createdAt]);
 
   const [newComment, setNewComment] = useState("");
   const [comments, setComments] = useState<Comment[]>(post.comments || []);
@@ -93,20 +101,23 @@ export default function PostDetailClient({
   // state สำหรับ Image Carousel
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  const handlePrevImage = () => {
-    if (currentImageIndex > 0) {
-      setCurrentImageIndex(currentImageIndex - 1);
-    }
-  };
+  // -----------------------------
+  // ฟังก์ชันควบคุม Carousel
+  // -----------------------------
+  const handlePrevImage = useCallback(() => {
+    setCurrentImageIndex((prev) => Math.max(prev - 1, 0));
+  }, []);
 
-  const handleNextImage = () => {
-    if (currentImageIndex < post.images.length - 1) {
-      setCurrentImageIndex(currentImageIndex + 1);
-    }
-  };
+  const handleNextImage = useCallback(() => {
+    setCurrentImageIndex((prev) =>
+      Math.min(prev + 1, post.images.length - 1),
+    );
+  }, [post.images.length]);
 
+  // -----------------------------
   // Toggle Favorite
-  const handleToggleFavorite = () => {
+  // -----------------------------
+  const handleToggleFavorite = useCallback(() => {
     startTransition(async () => {
       try {
         const result = await toggleFavorite({ postId: post.id });
@@ -115,17 +126,21 @@ export default function PostDetailClient({
         console.error("Error toggling favorite:", error);
       }
     });
-  };
+  }, [post.id]);
 
+  // -----------------------------
   // เปิด Modal Make an Offer
-  const handleOpenOfferModal = () => {
+  // -----------------------------
+  const handleOpenOfferModal = useCallback(() => {
     // ถ้าเป็นเจ้าของโพสต์ ไม่ต้องทำอะไร
     if (isOwner) return;
     setIsOfferModalOpen(true);
-  };
+  }, [isOwner]);
 
+  // -----------------------------
   // ส่งฟอร์ม Offer
-  const handleSubmitOffer = () => {
+  // -----------------------------
+  const handleSubmitOffer = useCallback(() => {
     if (!selectedOfferedPostId) {
       alert("Please select an item to offer");
       return;
@@ -142,12 +157,13 @@ export default function PostDetailClient({
         console.error("Trade offer failed:", error);
       }
     });
-  };
+  }, [post.id, selectedOfferedPostId]);
 
+  // -----------------------------
   // เพิ่มคอมเมนต์
-  const handleCommentSubmit = () => {
+  // -----------------------------
+  const handleCommentSubmit = useCallback(() => {
     if (!newComment.trim()) return;
-
     startTransition(async () => {
       try {
         const createdComment = await addComment({
@@ -171,7 +187,7 @@ export default function PostDetailClient({
         console.error("Failed to add comment:", error);
       }
     });
-  };
+  }, [newComment, post.id]);
 
   return (
     <section className="p-6 bg-gray-100 min-h-screen flex justify-center">
@@ -185,6 +201,8 @@ export default function PostDetailClient({
                 alt={`${post.name} - Image ${currentImageIndex + 1}`}
                 fill
                 className="object-cover transition-all duration-500"
+                // ใส่ priority สำหรับภาพแรก (เล็กน้อย) หากต้องการโหลดเร็ว
+                priority={currentImageIndex === 0}
               />
               {post.images.length > 1 && (
                 <>
@@ -211,7 +229,9 @@ export default function PostDetailClient({
                   <div
                     key={index}
                     className={`w-16 h-16 relative rounded overflow-hidden border-2 cursor-pointer ${
-                      index === currentImageIndex ? "border-blue-500" : "border-transparent"
+                      index === currentImageIndex
+                        ? "border-blue-500"
+                        : "border-transparent"
                     }`}
                     onClick={() => setCurrentImageIndex(index)}
                   >
@@ -220,6 +240,8 @@ export default function PostDetailClient({
                       alt={`${post.name} thumbnail ${index + 1}`}
                       fill
                       className="object-cover"
+                      // โหลด thumbnail แบบ lazy
+                      loading="lazy"
                     />
                   </div>
                 ))}
@@ -277,18 +299,21 @@ export default function PostDetailClient({
                 </Link>
               ) : (
                 <>
+                  {/* ถ้าไม่ใช่เจ้าของ แสดงปุ่ม Favorite */}
                   <button
                     onClick={handleToggleFavorite}
                     disabled={isPending}
                     className={`px-4 py-2 rounded-lg flex items-center gap-2 text-lg transition cursor-pointer ${
-                      isFavorite ? "bg-red-500 text-white" : "bg-gray-300 text-gray-700"
+                      isFavorite
+                        ? "bg-red-500 text-white"
+                        : "bg-gray-300 text-gray-700"
                     }`}
                   >
                     <FaHeart /> {isFavorite ? "Favorited" : "Favorite"}
                   </button>
 
-                  {/* แสดงปุ่ม Make an Offer เฉพาะเมื่อไม่ใช่เจ้าของโพสต์ */}
-                  {!offerSent && !isOwner && (
+                  {/* ปุ่ม Make an Offer เฉพาะเมื่อไม่ใช่เจ้าของ */}
+                  {!offerSent && (
                     <button
                       onClick={handleOpenOfferModal}
                       disabled={isPending}
@@ -363,7 +388,7 @@ export default function PostDetailClient({
       </div>
 
       {/* Modal Make an Offer */}
-      {isOfferModalOpen && (
+      {isOfferModalOpen && !isOwner && (
         <div
           className="fixed inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center z-50"
           onClick={() => setIsOfferModalOpen(false)}
@@ -411,3 +436,7 @@ export default function PostDetailClient({
     </section>
   );
 }
+
+// ใช้ memo เพื่อลด re-render เมื่อ props ไม่เปลี่ยน
+const PostDetailClient = memo(PostDetailClientRaw);
+export default PostDetailClient;

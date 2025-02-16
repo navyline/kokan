@@ -21,12 +21,12 @@ export default function HomePage() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // เรียก fetchPostsAction โดยส่ง searchQuery และ selectedCategory
         const postsData = await fetchPostsAction({
           categoryId: selectedCategory,
-          searchQuery, // ⬅️ เพิ่มบรรทัดนี้
+          searchQuery,
         });
-        setPosts(postsData);
+        // กรองโพสต์ที่มีสถานะ "TRADED" ออกไป
+        setPosts(postsData.filter((post: Post) => post.status !== "TRADED"));
 
         const categoriesData = await fetchCategories();
         setCategories(categoriesData);
@@ -39,7 +39,6 @@ export default function HomePage() {
     fetchData();
   }, [searchQuery, selectedCategory]);
 
-  // ฟังก์ชันเปลี่ยน Category
   const handleCategoryClick = (categoryId: string | null) => {
     setSelectedCategory(categoryId);
   };
@@ -47,25 +46,20 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-gray-50 pt-24">
       <div className="container mx-auto px-6 max-w-7xl">
-
-        {/* หัวข้อ */}
         <h1 className="text-4xl font-bold text-gray-800 mb-4 text-center">
           {searchQuery ? `Results for "${searchQuery}"` : "Trending Posts"}
         </h1>
         <p className="text-center text-gray-600 mb-10">
           เลือกหมวดหมู่ หรือพิมพ์คำค้นหาเพื่อดูโพสต์ทั้งหมด
         </p>
-
-        {/* เมนูหมวดหมู่ (Categories) */}
         <div className="flex gap-4 justify-center mb-8 flex-wrap">
           <button
             onClick={() => handleCategoryClick(null)}
-            className={`px-4 py-2 rounded-full text-sm border transition 
-              ${
-                selectedCategory === null
-                  ? "bg-indigo-600 text-white border-indigo-600"
-                  : "bg-white text-gray-700 hover:bg-gray-100 border-gray-300"
-              }`}
+            className={`px-4 py-2 rounded-full text-sm border transition ${
+              selectedCategory === null
+                ? "bg-indigo-600 text-white border-indigo-600"
+                : "bg-white text-gray-700 hover:bg-gray-100 border-gray-300"
+            }`}
           >
             All
           </button>
@@ -73,21 +67,17 @@ export default function HomePage() {
             <button
               key={category.id}
               onClick={() => handleCategoryClick(category.id)}
-              className={`px-4 py-2 rounded-full text-sm border transition 
-                ${
-                  selectedCategory === category.id
-                    ? "bg-indigo-600 text-white border-indigo-600"
-                    : "bg-white text-gray-700 hover:bg-gray-100 border-gray-300"
-                }`}
+              className={`px-4 py-2 rounded-full text-sm border transition ${
+                selectedCategory === category.id
+                  ? "bg-indigo-600 text-white border-indigo-600"
+                  : "bg-white text-gray-700 hover:bg-gray-100 border-gray-300"
+              }`}
             >
               {category.name}
             </button>
           ))}
         </div>
-
-        {/* แสดง Posts */}
         {loading ? (
-          // Skeleton Loading
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {[...Array(8)].map((_, index) => (
               <div

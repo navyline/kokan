@@ -2,11 +2,8 @@ import { notFound } from "next/navigation";
 import { fetchUserDashboardData } from "./actions";
 import DashboardClient from "./DashboardClient";
 
-/**
- * หน้า Dashboard (Server Component)
- * ดึงข้อมูล Dashboard แล้วส่งไปยัง Client Component
- */
 export default async function DashboardPage() {
+  // เรียกใช้ฟังก์ชันดึงข้อมูลแดชบอร์ด
   const data = await fetchUserDashboardData();
   if (!data) {
     notFound();
@@ -14,7 +11,7 @@ export default async function DashboardPage() {
 
   const profileId = data.profileId ?? "";
 
-  // แปลงข้อมูลของ trades ให้ createdAt, updatedAt เป็น ISO string
+  // แปลงข้อมูล trades
   const trades = (data.trades ?? []).map((trade) => ({
     ...trade,
     createdAt: new Date(trade.createdAt).toISOString(),
@@ -35,7 +32,7 @@ export default async function DashboardPage() {
       : null,
   }));
 
-  // แปลงข้อมูลของ favorites ให้ createdAt, updatedAt ของ post เป็น ISO string
+  // แปลงข้อมูล favorites
   const favorites = (data.favorites ?? []).map((fav) => ({
     ...fav,
     post: fav.post
@@ -47,6 +44,13 @@ export default async function DashboardPage() {
       : null,
   }));
 
+  // แปลงข้อมูล posts
+  const posts = (data.posts ?? []).map((post) => ({
+    ...post,
+    createdAt: new Date(post.createdAt).toISOString(),
+    updatedAt: new Date(post.updatedAt).toISOString(),
+  }));
+
   const notifications = data.notifications ?? [];
 
   return (
@@ -54,6 +58,7 @@ export default async function DashboardPage() {
       trades={trades}
       favorites={favorites}
       notifications={notifications}
+      posts={posts}
       currentUserProfileId={profileId}
     />
   );

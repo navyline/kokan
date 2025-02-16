@@ -50,7 +50,7 @@ export async function createPostAction(formData: FormData): Promise<string> {
         province,
         categoryId: category,
         condition,
-        images: imageUrls, // บันทึก URL ของภาพหลายภาพ (ตรวจสอบให้แน่ใจว่าใน Prisma Schema ฟิลด์นี้เป็น array เช่น String[])
+        images: imageUrls,
         lat,
         lng,
         profileId: profile.id,

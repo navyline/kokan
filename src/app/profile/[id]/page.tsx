@@ -3,9 +3,10 @@ import { currentUser } from "@clerk/nextjs/server";
 import Image from "next/image";
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
+
 import db from "@/utils/db";
 import { getProfileById, followUser, unfollowUser } from "./actions";
-import { User } from "lucide-react";
+import { User, CheckCircle } from "lucide-react"; 
 import PostCard from "@/components/PostCard";
 import StartChatButton from "@/components/chat/StartChatButton";
 
@@ -15,7 +16,7 @@ type ProfilePageProps = {
   params: Promise<{ id: string }>;
 };
 
-// Type สำหรับโพสต์ที่มีข้อมูล relation
+// ตัวอย่าง Type สำหรับโพสต์พร้อม relation
 interface PostWithRelations {
   id: string;
   name: string;
@@ -42,6 +43,7 @@ interface PostWithRelations {
 
 export default async function ProfilePage({ params }: ProfilePageProps) {
   const { id } = await params;
+  // เรียก getProfileById (ที่ include verification)
   const profile = await getProfileById(id);
 
   if (!profile) notFound();
@@ -53,11 +55,17 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     : null;
   const currentUserId = currentProfile?.id;
 
-  // ตรวจสอบว่าเป็นเจ้าของโปรไฟล์หรือไม่
+  // เป็นเจ้าของโปรไฟล์?
   const isOwner = currentUserId === profile.id;
+  // กำลัง Follow อยู่?
   const isFollowing = profile.followers.some(
     (f: { followerId: string }) => f.followerId === currentUserId
   );
+
+  // ตรวจสอบการยืนยันตัวตน
+  // เพราะเรา include: { verification: true } จึงมี profile.verification
+  // ถ้าผู้ใช้ verified = true => แสดง CheckCircle
+  const isVerified = profile.verification?.status === "APPROVED";
 
   async function handleFollow() {
     "use server";
@@ -83,6 +91,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       {/* Profile Header */}
       <div className="max-w-4xl mx-auto px-4">
         <div className="relative bg-white rounded-xl shadow-lg p-6 -mt-16">
+          {/* รูปโปรไฟล์ */}
           <div className="absolute -top-16 left-6 sm:left-10 w-32 h-32 sm:w-36 sm:h-36 rounded-full overflow-hidden border-4 border-white shadow-sm">
             {profile.profileImage ? (
               <Image
@@ -99,12 +108,23 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           </div>
 
           <div className="ml-36 sm:ml-44 mt-2">
-            <h1 className="text-2xl font-bold text-gray-800">
+            <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-1">
               {profile.firstName} {profile.lastName}
+              {/* หาก Verified => แสดงเช็คสีฟ้า */}
+              {isVerified && (
+                <CheckCircle
+                  className="text-blue-500"
+                  size={20}
+                  aria-label="Verified"
+                />
+              )}
             </h1>
             <p className="text-gray-600 -mt-1">@{profile.userName}</p>
-            <p className="mt-3 text-sm text-gray-700">{profile.bio || "Bio"}</p>
+            <p className="mt-3 text-sm text-gray-700">
+              {profile.bio || "Bio"}
+            </p>
 
+            {/* Followers / Following */}
             <div className="flex items-center gap-4 mt-3 text-sm">
               <div>
                 <span className="font-semibold">{profile.followers.length}</span>{" "}
@@ -150,7 +170,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
             {isOwner && (
               <div className="mt-4">
                 <Link
-                  href={`/profile/${id}/edit`}
+                  href={`/profile/${profile.id}/edit`}
                   className="px-4 py-2 bg-purple-600 text-white rounded cursor-pointer hover:bg-purple-700 transition"
                 >
                   แก้ไขโปรไฟล์
@@ -161,17 +181,20 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         </div>
       </div>
 
-      {/* Posts Grid (จัดเรียงแบบหน้า Home) */}
+      {/* Posts Grid */}
       <div className="max-w-7xl mx-auto mt-8 px-4">
-        <h2 className="text-lg font-semibold mb-4">Posts ของ {profile.userName}</h2>
+        <h2 className="text-lg font-semibold mb-4">
+          Posts ของ {profile.userName}
+        </h2>
         {profile.posts.length === 0 ? (
           <p className="text-gray-500">ยังไม่มีโพสต์</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {profile.posts.map((p) => {
-              // แปลงวันที่และแปลงให้เป็น string
+              // แปลงวันที่เป็น ISO string
               const createdAt = p.createdAt.toISOString();
               const updatedAt = p.updatedAt.toISOString();
+
               // cast p เป็น PostWithRelations
               const postData = p as unknown as PostWithRelations;
               return (

@@ -8,19 +8,7 @@ import { clerkClient, currentUser } from "@clerk/nextjs/server";
 import db from "@/utils/db";
 import { redirect } from "next/navigation";
 
-
-// const getAuthUser = async () => {
-//   // code body
-//   const user = await currentUser();
-//   if (!user) {
-//     throw new Error("You must logged!!!");
-//   }
-//   if (!user.privateMetadata.hasProfile) redirect("/profile/create");
-//   return user;
-// };
-
 const renderError = (error: unknown): { message: string } => {
-  //code body
   return {
     message: error instanceof Error ? error.message : "An Error!!!",
   };

@@ -1,6 +1,7 @@
 // utils/types.ts
 
 // ------------------- Profile -------------------
+
 export type Profile = {
   id: string;
   clerkId: string;
@@ -9,8 +10,11 @@ export type Profile = {
   userName: string;
   email?: string | null;
   profileImage?: string | null;
-  // หากต้องการฟิลด์เพิ่มเติม เช่น role, bio ฯลฯ ให้เพิ่มได้
+  bio?: string | null;
+
 };
+
+
 
 // ------------------- Post -------------------
 export type Post = {

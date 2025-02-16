@@ -5,11 +5,14 @@ import { currentUser } from "@clerk/nextjs/server";
 
 /**
  * ดึงข้อมูลโปรไฟล์จากฐานข้อมูล
+ * รวมถึง posts, followers, following, และ verification
  */
 export async function getProfileById(id: string) {
+  // สำคัญ: เพิ่ม verification: true เพื่อดึงข้อมูลสถานะยืนยันตัวตน
   return await db.profile.findUnique({
     where: { id },
     include: {
+      verification: true, // ← ดึง verification ด้วย
       posts: {
         include: {
           favorites: true,
@@ -114,7 +117,7 @@ export const startChat = async (receiverId: string) => {
       });
     }
 
-    // ส่ง URL ของหน้าที่แสดงแชท (สมมติว่าเราใช้ dynamic route /chat/[chatId])
+    // ส่ง URL ของหน้าที่แสดงแชท (สมมติว่าเราใช้ dynamic route /chats)
     return `/chats`;
   } catch (error) {
     console.error("❌ Error starting chat:", error);

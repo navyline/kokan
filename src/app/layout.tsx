@@ -2,6 +2,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import Navbar from "@/components/Navbar";
 import ProgressBarProvider from "@/components/ProgressBarProvider";
 import { Suspense } from "react";
+import { Toaster } from "react-hot-toast"; // เพิ่ม Toaster
 import "./globals.css";
 import Footer from "@/components/Footer";
 
@@ -23,6 +24,7 @@ export default function RootLayout({
               <Navbar />
               {children}
               <Footer />
+              <Toaster position="bottom-center" />
             </ProgressBarProvider>
           </Suspense>
         </ClerkProvider>

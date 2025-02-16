@@ -42,13 +42,17 @@ model Profile {
 
 
 model Verification {
-  userId      String             @unique @db.Uuid
-  documentUrl String
-  status      VerificationStatus @default(PENDING)
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-  id          String             @id @default(uuid()) @db.Uuid
-  user        Profile            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String             @unique @db.Uuid
+  documentUrl    String
+  // เพิ่มฟิลด์ใหม่
+  phone          String?
+  address        String?
+  documentImage  String? // เก็บ URL ของรูปบัตร ปกติอัปโหลดไป S3, Cloud storage
+  status         VerificationStatus @default(PENDING)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  id             String             @id @default(uuid()) @db.Uuid
+  user           Profile            @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Post {

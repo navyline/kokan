@@ -118,7 +118,7 @@ const Sidebar = memo(function Sidebar({ isOpen, onClose, localId }: SidebarProps
             My Favorites
           </Link>
           <Link
-            href="/settings"
+            href="/profile/${localId}/edit"
             className="block px-4 py-2 rounded-lg hover:bg-gray-100 transition"
           >
             Settings

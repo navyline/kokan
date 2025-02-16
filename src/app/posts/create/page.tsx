@@ -319,5 +319,4 @@ const CreatePostRaw = () => {
   );
 };
 
-export const CreatePost = memo(CreatePostRaw);
-export default CreatePost;
+export default memo(CreatePostRaw);

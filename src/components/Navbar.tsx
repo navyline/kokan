@@ -65,16 +65,15 @@ const Sidebar = memo(function Sidebar({ isOpen, onClose, localId }: SidebarProps
       {/* Backdrop เมื่อ Sidebar เปิด */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 transition-opacity duration-300"
+          className="fixed inset-0 z-40 bg-black/50 transition-opacity duration-300"
           onClick={onClose}
         ></div>
       )}
 
       {/* Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-screen w-72 bg-white shadow-md transform ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        } transition-transform duration-300 z-50 flex flex-col`}
+        className={`fixed top-0 left-0 h-screen w-72 bg-white shadow-md transform ${isOpen ? "translate-x-0" : "-translate-x-full"
+          } transition-transform duration-300 z-50 flex flex-col`}
       >
         <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200">
           <h2 className="font-bold text-xl text-gray-800">เมนู</h2>

@@ -1,22 +1,12 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
 export default function LandingPageClient() {
-  const { isLoaded, user } = useUser();
-  const router = useRouter();
+  const { isLoaded } = useUser();
 
-  // เมื่อโหลดข้อมูลผู้ใช้เสร็จแล้ว และพบว่าผู้ใช้ล็อกอินอยู่ ให้ redirect ไป /home
-  useEffect(() => {
-    if (isLoaded && user) {
-      router.replace("/home");
-    }
-  }, [isLoaded, user, router]);
-
-  // หากข้อมูลผู้ใช้ยังไม่โหลดหรือมีผู้ใช้อยู่แล้ว ไม่ต้องแสดงหน้า Landing Page
-  if (!isLoaded || user) {
+  // รอข้อมูลผู้ใช้ให้โหลดเสร็จ
+  if (!isLoaded) {
     return null;
   }
 
@@ -26,7 +16,8 @@ export default function LandingPageClient() {
       <div className="flex-grow flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-10">
         <div className="max-w-3xl text-center">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-6 drop-shadow-lg">
-            ยินดีต้อนรับสู่<br />
+            ยินดีต้อนรับสู่
+            <br />
             <span className="text-white">ระบบแลกเปลี่ยนสินค้าออนไลน์</span>
           </h1>
           <p className="text-lg sm:text-xl text-white/90 mb-8 leading-relaxed">
@@ -39,7 +30,7 @@ export default function LandingPageClient() {
           </p>
           <div className="pb-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
-              onClick={() => router.push("/sign-up")}
+              onClick={() => {}}
               className="px-8 py-3 bg-pink-500 rounded-md font-semibold hover:bg-pink-600 transition duration-200"
             >
               เริ่มต้นเลย

@@ -44,7 +44,7 @@ export const createProfileAction = async (
     // console.log(error);
     return renderError(error);
   }
-  redirect("/");
+  redirect("/home");
 };
 
 

@@ -1,21 +1,9 @@
 import { clerkMiddleware } from "@clerk/nextjs/server";
-import { NextResponse, NextRequest, NextFetchEvent } from "next/server";
+import {  NextRequest, NextFetchEvent } from "next/server";
 
 export default function customMiddleware(req: NextRequest, evt: NextFetchEvent) {
   // เรียกใช้งาน middleware มาตรฐานของ Clerk
-  const response = clerkMiddleware()(req, evt);
-
-  // ดึงข้อมูล userId จาก header ที่ Clerk ใส่ไว้ (ถ้ามี)
-  const url = req.nextUrl;
-  const userId = req.headers.get("clerk-user-id");
-
-  // ถ้า userId มีค่า และกำลังอยู่ในเส้นทาง "/" ให้ redirect ไป "/home"
-  if (userId && url.pathname === "/") {
-    return NextResponse.redirect(new URL("/home", req.url));
-  }
-
-  // ถ้าไม่เข้าเงื่อนไขอื่น ให้คืนค่าตามปกติ (response ที่ได้จาก clerkMiddleware)
-  return response;
+  return clerkMiddleware()(req, evt);
 }
 
 export const config = {

@@ -83,7 +83,7 @@ export default function PostCard({ post }: { post: Post }) {
             </Link>
           </div>
         ) : (
-          <div className="mt-3 text-gray-500 text-sm">No profile</div>
+          <div className="mt-3 text-gray-500 text-sm"> </div>
         )}
       </div>
     </div>

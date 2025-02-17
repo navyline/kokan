@@ -21,22 +21,22 @@ const Footer = () => {
             <h3 className="text-xl font-semibold mb-4">ลิงก์สำคัญ</h3>
             <ul>
               <li className="mb-2">
-                <Link href="/about" className="text-gray-400 hover:text-white transition">
+                <Link href="#" className="text-gray-400 hover:text-white transition">
                   เกี่ยวกับเรา
                 </Link>
               </li>
               <li className="mb-2">
-                <Link href="/how-it-works" className="text-gray-400 hover:text-white transition">
+                <Link href="#" className="text-gray-400 hover:text-white transition">
                   วิธีการใช้งาน
                 </Link>
               </li>
               <li className="mb-2">
-                <Link href="/faq" className="text-gray-400 hover:text-white transition">
+                <Link href="#" className="text-gray-400 hover:text-white transition">
                   คำถามที่พบบ่อย
                 </Link>
               </li>
               <li className="mb-2">
-                <Link href="/contact" className="text-gray-400 hover:text-white transition">
+                <Link href="#" className="text-gray-400 hover:text-white transition">
                   ติดต่อเรา
                 </Link>
               </li>

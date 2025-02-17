@@ -1,223 +1,223 @@
-generator client {
-  provider = "prisma-client-js"
-}
+  generator client {
+    provider = "prisma-client-js"
+  }
 
-datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
-}
+  datasource db {
+    provider  = "postgresql"
+    url       = env("DATABASE_URL")
+    directUrl = env("DIRECT_URL")
+  }
 
-model Profile {
-  id            String        @id @default(uuid()) @db.Uuid
-  clerkId       String        @unique
-  firstName     String
-  lastName      String
-  userName      String        @unique
-  email         String?       @unique
-  profileImage  String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  badgeRank     Int?
-  bio           String?
-  coverImage    String?
-  interests     String?
-  meetingSpots  String?
-  role          UserRole      @default(USER)
-  createdChats  Chat[]        @relation("CreatorChats")
-  receivedChats Chat[]        @relation("ReceiverChats")
-  messages      Message[]
-  posts         Post[]
-  verification  Verification?
-  followers     Follow[] @relation("followers")
-  following     Follow[] @relation("following")
-  comments      Comment[]
-  favorites     Favorite[]
+  model Profile {
+    id            String        @id @default(uuid()) @db.Uuid
+    clerkId       String        @unique
+    firstName     String
+    lastName      String
+    userName      String        @unique
+    email         String?       @unique
+    profileImage  String?
+    createdAt     DateTime      @default(now())
+    updatedAt     DateTime      @updatedAt
+    badgeRank     Int?
+    bio           String?
+    coverImage    String?
+    interests     String?
+    meetingSpots  String?
+    role          UserRole      @default(USER)
+    createdChats  Chat[]        @relation("CreatorChats")
+    receivedChats Chat[]        @relation("ReceiverChats")
+    messages      Message[]
+    posts         Post[]
+    verification  Verification?
+    followers     Follow[] @relation("followers")
+    following     Follow[] @relation("following")
+    comments      Comment[]
+    favorites     Favorite[]
 
-  offeredTrades Trade[] @relation("TradeOfferBy")
-  receivedTrades Trade[] @relation("TradeOfferTo")
+    offeredTrades Trade[] @relation("TradeOfferBy")
+    receivedTrades Trade[] @relation("TradeOfferTo")
 
-  @@index([userName, email])
-}
-
-
-model Verification {
-  userId         String             @unique @db.Uuid
-  documentUrl    String
-  // เพิ่มฟิลด์ใหม่
-  phone          String?
-  address        String?
-  documentImage  String? // เก็บ URL ของรูปบัตร ปกติอัปโหลดไป S3, Cloud storage
-  status         VerificationStatus @default(PENDING)
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
-  id             String             @id @default(uuid()) @db.Uuid
-  user           Profile            @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model Post {
-  id          String     @id @default(uuid()) @db.Uuid
-  name        String
-  description String
-  images      String[]   // ✅ แทนที่ "image" ด้วย "images" เป็น Array
-  province    String
-  lat         Float?
-  lng         Float?
-  price       Int
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  profileId   String     @db.Uuid
-  categoryId  String?    @db.Uuid
-  condition   Condition
-  status      PostStatus @default(AVAILABLE)
-  views       Int        @default(0)
-  tags        String?
-  profile     Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  favorites   Favorite[]
-  comments    Comment[]
-  category    Category?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-
-  offeredTrades Trade[] @relation("TradePostOffered")
-  wantedTrades  Trade[] @relation("TradePostWanted")
-}
+    @@index([userName, email])
+  }
 
 
+  model Verification {
+    userId         String             @unique @db.Uuid
+    documentUrl    String
+    // เพิ่มฟิลด์ใหม่
+    phone          String?
+    address        String?
+    documentImage  String? // เก็บ URL ของรูปบัตร ปกติอัปโหลดไป S3, Cloud storage
+    status         VerificationStatus @default(PENDING)
+    createdAt      DateTime           @default(now())
+    updatedAt      DateTime           @updatedAt
+    id             String             @id @default(uuid()) @db.Uuid
+    user           Profile            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  }
 
+  model Post {
+    id          String     @id @default(uuid()) @db.Uuid
+    name        String
+    description String
+    images      String[]   // ✅ แทนที่ "image" ด้วย "images" เป็น Array
+    province    String
+    lat         Float?
+    lng         Float?
+    price       Int
+    createdAt   DateTime   @default(now())
+    updatedAt   DateTime   @updatedAt
+    profileId   String     @db.Uuid
+    categoryId  String?    @db.Uuid
+    condition   Condition
+    status      PostStatus @default(AVAILABLE)
+    views       Int        @default(0)
+    tags        String?
+    profile     Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
+    favorites   Favorite[]
+    comments    Comment[]
+    category    Category?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
 
-model Follow {
-  id          String   @id @default(uuid()) @db.Uuid
-  followerId  String   @db.Uuid
-  followingId String   @db.Uuid
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now())
-
-  follower Profile @relation("followers", fields: [followerId], references: [id], onDelete: Cascade)
-  following Profile @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
-
-  @@unique([followerId, followingId])
-}
-
-model Comment {
-  id        String   @id @default(uuid()) @db.Uuid
-  content   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
-  postId    String   @db.Uuid
-  profileId String   @db.Uuid
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
-}
-
-model Favorite {
-  id        String   @id @default(uuid()) @db.Uuid
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
-  profileId String   @db.Uuid
-  postId    String   @db.Uuid
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
-}
-
-model Chat {
-  id         String    @id @default(uuid()) @db.Uuid
-  creatorId  String    @db.Uuid
-  receiverId String    @db.Uuid
-  isGroup    Boolean   @default(false)
-  createdAt  DateTime  @default(now())
-  creator    Profile   @relation("CreatorChats", fields: [creatorId], references: [id], onDelete: Cascade)
-  receiver   Profile   @relation("ReceiverChats", fields: [receiverId], references: [id], onDelete: Cascade)
-  messages   Message[]
-
-  @@unique([creatorId, receiverId])
-}
-
-model Message {
-  id        String   @id @default(uuid()) @db.Uuid
-  chatId    String   @db.Uuid
-  senderId  String   @db.Uuid
-  content   String
-  isRead    Boolean  @default(false)
-  createdAt DateTime @default(now())
-  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
-  sender    Profile  @relation(fields: [senderId], references: [id], onDelete: Cascade)
-
-  @@index([chatId, createdAt])
-}
-
-model Trade {
-  id            String      @id @default(uuid()) @db.Uuid
-  status        TradeStatus @default(PENDING)
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @default(now())
-  offerById     String      @db.Uuid
-  offerToId     String      @db.Uuid
-  postOfferedId String      @db.Uuid
-  postWantedId  String?     @db.Uuid
-
-  offerBy    Profile @relation(name: "TradeOfferBy", fields: [offerById], references: [id], onDelete: Cascade)
-  offerTo    Profile @relation(name: "TradeOfferTo", fields: [offerToId], references: [id], onDelete: Cascade)
-  postOffered Post   @relation(name: "TradePostOffered", fields: [postOfferedId], references: [id], onDelete: Cascade)
-  postWanted  Post?  @relation(name: "TradePostWanted", fields: [postWantedId], references: [id], onDelete: Cascade)
-}
+    offeredTrades Trade[] @relation("TradePostOffered")
+    wantedTrades  Trade[] @relation("TradePostWanted")
+  }
 
 
 
 
-model Review {
-  id         String   @id @default(uuid()) @db.Uuid
-  rating     Int
-  comment    String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @default(now())
-  reviewerId String   @db.Uuid
-  revieweeId String   @db.Uuid
-}
+  model Follow {
+    id          String   @id @default(uuid()) @db.Uuid
+    followerId  String   @db.Uuid
+    followingId String   @db.Uuid
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @default(now())
 
-model Category {
-  id    String @id @default(uuid()) @db.Uuid
-  name  String @unique
-  posts Post[]
-}
+    follower Profile @relation("followers", fields: [followerId], references: [id], onDelete: Cascade)
+    following Profile @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
 
-model Notification {
-  id         String   @id @default(uuid()) @db.Uuid
-  message    String
-  isRead     Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @default(now())
-  receiverId String   @db.Uuid
-}
+    @@unique([followerId, followingId])
+  }
 
-enum PostStatus {
-  AVAILABLE
-  PENDING_TRADE
-  TRADED
-  CLOSED
-}
+  model Comment {
+    id        String   @id @default(uuid()) @db.Uuid
+    content   String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now())
+    postId    String   @db.Uuid
+    profileId String   @db.Uuid
+    post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+    profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  }
 
-enum TradeStatus {
-  PENDING
-  ACCEPTED
-  REJECTED
-  CANCELLED
-  COMPLETED
-}
+  model Favorite {
+    id        String   @id @default(uuid()) @db.Uuid
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now())
+    profileId String   @db.Uuid
+    postId    String   @db.Uuid
+    post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+    profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  }
 
-enum Condition {
-  NEW
-  USED
-  LIKE_NEW
-  REFURBISHED
-}
+  model Chat {
+    id         String    @id @default(uuid()) @db.Uuid
+    creatorId  String    @db.Uuid
+    receiverId String    @db.Uuid
+    isGroup    Boolean   @default(false)
+    createdAt  DateTime  @default(now())
+    creator    Profile   @relation("CreatorChats", fields: [creatorId], references: [id], onDelete: Cascade)
+    receiver   Profile   @relation("ReceiverChats", fields: [receiverId], references: [id], onDelete: Cascade)
+    messages   Message[]
 
-enum UserRole {
-  USER
-  ADMIN
-  MODERATOR
-}
+    @@unique([creatorId, receiverId])
+  }
 
-enum VerificationStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
+  model Message {
+    id        String   @id @default(uuid()) @db.Uuid
+    chatId    String   @db.Uuid
+    senderId  String   @db.Uuid
+    content   String
+    isRead    Boolean  @default(false)
+    createdAt DateTime @default(now())
+    chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+    sender    Profile  @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+    @@index([chatId, createdAt])
+  }
+
+  model Trade {
+    id            String      @id @default(uuid()) @db.Uuid
+    status        TradeStatus @default(PENDING)
+    createdAt     DateTime    @default(now())
+    updatedAt     DateTime    @default(now())
+    offerById     String      @db.Uuid
+    offerToId     String      @db.Uuid
+    postOfferedId String      @db.Uuid
+    postWantedId  String?     @db.Uuid
+
+    offerBy    Profile @relation(name: "TradeOfferBy", fields: [offerById], references: [id], onDelete: Cascade)
+    offerTo    Profile @relation(name: "TradeOfferTo", fields: [offerToId], references: [id], onDelete: Cascade)
+    postOffered Post   @relation(name: "TradePostOffered", fields: [postOfferedId], references: [id], onDelete: Cascade)
+    postWanted  Post?  @relation(name: "TradePostWanted", fields: [postWantedId], references: [id], onDelete: Cascade)
+  }
+
+
+
+
+  model Review {
+    id         String   @id @default(uuid()) @db.Uuid
+    rating     Int
+    comment    String?
+    createdAt  DateTime @default(now())
+    updatedAt  DateTime @default(now())
+    reviewerId String   @db.Uuid
+    revieweeId String   @db.Uuid
+  }
+
+  model Category {
+    id    String @id @default(uuid()) @db.Uuid
+    name  String @unique
+    posts Post[]
+  }
+
+  model Notification {
+    id         String   @id @default(uuid()) @db.Uuid
+    message    String
+    isRead     Boolean  @default(false)
+    createdAt  DateTime @default(now())
+    updatedAt  DateTime @default(now())
+    receiverId String   @db.Uuid
+  }
+
+  enum PostStatus {
+    AVAILABLE
+    PENDING_TRADE
+    TRADED
+    CLOSED
+  }
+
+  enum TradeStatus {
+    PENDING
+    ACCEPTED
+    REJECTED
+    CANCELLED
+    COMPLETED
+  }
+
+  enum Condition {
+    NEW
+    USED
+    LIKE_NEW
+    REFURBISHED
+  }
+
+  enum UserRole {
+    USER
+    ADMIN
+    MODERATOR
+  }
+
+  enum VerificationStatus {
+    PENDING
+    APPROVED
+    REJECTED
+  }

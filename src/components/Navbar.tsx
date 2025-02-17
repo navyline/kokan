@@ -111,12 +111,6 @@ const Sidebar = memo(function Sidebar({ isOpen, onClose, localId }: SidebarProps
             Dashboard
           </Link>
           <Link
-            href="/favorites"
-            className="block px-4 py-2 rounded-lg hover:bg-gray-100 transition"
-          >
-            My Favorites
-          </Link>
-          <Link
             href="#"
             className="block px-4 py-2 rounded-lg hover:bg-gray-100 transition"
           >

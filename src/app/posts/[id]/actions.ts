@@ -12,6 +12,7 @@ export const fetchPostDetail = async ({ id }: { id: string }) => {
       where: { id },
       include: {
         profile: true,
+        category: true,
         comments: {
           include: {
             profile: true,

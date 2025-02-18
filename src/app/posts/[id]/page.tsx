@@ -85,6 +85,7 @@ export default async function PostDetail({ params }: PostDetailProps) {
     updatedAt: post.updatedAt.toISOString(),
     views: post.views,
     tags: post.tags,
+    status: post.status,
     profile: post.profile || {
       id: post.profileId,
       clerkId: "",
@@ -94,8 +95,8 @@ export default async function PostDetail({ params }: PostDetailProps) {
       email: null,
       profileImage: "/default-profile.png",
     },
-    category: post.categoryId ? { id: post.categoryId, name: "" } : null,
-    status: post.status,
+    // Updated category mapping to include both id and name if available
+    category: post.category ? { id: post.category.id, name: post.category.name } : null,
     comments: (post.comments || []).map((c) => ({
       id: c.id,
       content: c.content,

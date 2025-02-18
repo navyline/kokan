@@ -10,7 +10,13 @@ import React, {
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { FaMapMarkerAlt, FaClock, FaHeart, FaExchangeAlt, FaCog } from "react-icons/fa";
+import {
+  FaMapMarkerAlt,
+  FaClock,
+  FaHeart,
+  FaExchangeAlt,
+  FaCog,
+} from "react-icons/fa";
 import { formatDistance } from "date-fns/formatDistance";
 import { enUS } from "date-fns/locale";
 
@@ -88,6 +94,14 @@ function PostDetailClientRaw({
     }
     return "Unknown time";
   }, [post.createdAt]);
+
+  // Format the price in Thai Baht using Intl.NumberFormat
+  const formattedPrice = useMemo(() => {
+    return new Intl.NumberFormat("th-TH", {
+      style: "currency",
+      currency: "THB",
+    }).format(post.price);
+  }, [post.price]);
 
   const [newComment, setNewComment] = useState("");
   const [comments, setComments] = useState<Comment[]>(post.comments || []);
@@ -252,7 +266,8 @@ function PostDetailClientRaw({
           {/* ข้อมูลสินค้า */}
           <div className="space-y-4">
             <h1 className="text-3xl font-bold text-gray-800">{post.name}</h1>
-
+            {/* Display the formatted price */}
+            <p className="text-xl font-bold text-gray-800">มูลค่า: {formattedPrice}</p>
             <p className="text-gray-500 text-sm flex items-center gap-2">
               <FaClock className="text-gray-400" />
               {formattedTime}
@@ -260,7 +275,7 @@ function PostDetailClientRaw({
 
             <p className="text-gray-700">{post.description}</p>
 
-            {/* เพิ่ม Category และ Condition */}
+            {/* แสดง Category และ Condition */}
             <p className="text-gray-700">
               <strong>Category:</strong> {post.category?.name ?? "Unknown"}
             </p>

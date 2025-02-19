@@ -5,6 +5,16 @@ import { useUser } from "@clerk/nextjs";
 import Image from "next/image";
 import { motion } from "framer-motion";
 
+/** นำเข้าไอคอนจาก Heroicons (เวอร์ชัน Outline) */
+import {
+  ShoppingBagIcon,
+  ChatBubbleLeftRightIcon,
+  BellAlertIcon,
+  CloudArrowUpIcon,
+  DevicePhoneMobileIcon,
+  ShieldCheckIcon,
+} from "@heroicons/react/24/outline";
+
 export default function LandingPageClient() {
   const { isLoaded } = useUser();
 
@@ -64,8 +74,47 @@ export default function LandingPageClient() {
         </div>
       </div>
 
+      {/* บริการของเรา (Services Section) */}
+      <div className="bg-white/5 py-12 px-4 sm:px-6 lg:px-8 rounded-md shadow-md">
+        <h2 className="text-center text-2xl sm:text-3xl font-bold mb-8 drop-shadow-lg">
+          บริการของเรา
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+          <ServiceCard
+            Icon={ShoppingBagIcon}
+            title="ใช้งานง่าย"
+            description="ออกแบบมาให้ใช้งานง่าย ใคร ๆ ก็แลกเปลี่ยนสินค้าได้สบาย"
+          />
+          <ServiceCard
+            Icon={ChatBubbleLeftRightIcon}
+            title="โพสต์สินค้าเร็ว"
+            description="เพียงไม่กี่คลิก ก็สร้างโพสต์พร้อมรูปภาพได้ทันที"
+          />
+          <ServiceCard
+            Icon={BellAlertIcon}
+            title="แจ้งเตือนเรียลไทม์"
+            description="ไม่พลาดทุกการติดต่อ ข้อเสนอใหม่ ๆ ส่งตรงถึงคุณทันที"
+          />
+          <ServiceCard
+            Icon={CloudArrowUpIcon}
+            title="ระบบแชทในตัว"
+            description="พูดคุย ตกลงแลกเปลี่ยนได้อย่างปลอดภัยในแพลตฟอร์ม"
+          />
+          <ServiceCard
+            Icon={DevicePhoneMobileIcon}
+            title="รองรับหลายช่องทาง"
+            description="ใช้งานได้ทั้งบนมือถือและคอมพิวเตอร์ สะดวกทุกที่ทุกเวลา"
+          />
+          <ServiceCard
+            Icon={ShieldCheckIcon}
+            title="ปลอดภัย มั่นใจได้"
+            description="ระบบรีวิวและยืนยันตัวตน ช่วยสร้างความเชื่อมั่นในการแลกเปลี่ยน"
+          />
+        </div>
+      </div>
+
       {/* ส่วน Feature Highlights */}
-      <div className="bg-white/10 rounded-t-3xl py-12 px-4 sm:px-6 lg:px-8 shadow-xl">
+      <div className="bg-white/10 rounded-t-3xl py-12 px-4 sm:px-6 lg:px-8 shadow-xl mt-8">
         <h2 className="text-center text-2xl sm:text-3xl font-bold mb-8 drop-shadow-lg">
           ฟีเจอร์เด็ดของเรา
         </h2>
@@ -105,7 +154,7 @@ export default function LandingPageClient() {
 }
 
 /** 
- * คอมโพเนนต์แยกสำหรับไอคอนต่าง ๆ 
+ * คอมโพเนนต์แยกสำหรับไอคอนเทคโนโลยี (Marquee) 
  * ขยายขนาดให้เห็นเด่นขึ้น (เช่น 72x72) 
  */
 function TechIcons() {
@@ -156,6 +205,27 @@ function IconWrap({ label, children }: IconWrapProps) {
         {children}
       </div>
       <span className="text-xs text-white/80 mt-1">{label}</span>
+    </div>
+  );
+}
+
+/** 
+ * คอมโพเนนต์แสดงบริการ (Service Card) โดยใช้ Heroicons 
+ * แทนการส่ง path ของรูป ก็ส่งเป็นไอคอนคอมโพเนนต์แทน
+ */
+interface ServiceCardProps {
+  Icon: (props: React.SVGProps<SVGSVGElement>) => JSX.Element;
+  title: string;
+  description: string;
+}
+
+function ServiceCard({ Icon, title, description }: ServiceCardProps) {
+  return (
+    <div className="flex flex-col items-center text-center space-y-3">
+      {/* ขนาดและสีของ Heroicon ปรับได้ใน className */}
+      <Icon className="w-16 h-16 text-white/90" />
+      <h3 className="text-lg font-semibold">{title}</h3>
+      <p className="text-sm text-white/90">{description}</p>
     </div>
   );
 }

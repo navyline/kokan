@@ -17,21 +17,20 @@ import {
 
 export default function LandingPageClient() {
   const { isLoaded } = useUser();
-
   if (!isLoaded) return null;
 
   return (
     <div className="relative flex flex-col min-h-screen bg-gradient-to-br from-blue-800 via-blue-900 to-black text-white overflow-hidden">
       {/* ส่วน Hero Section */}
-      <div className="flex-grow flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 pt-10">
+      <div className="flex-grow flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10">
         {/* ข้อความและปุ่ม */}
-        <div className="max-w-3xl text-center space-y-6 mb-12">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold drop-shadow-2xl">
+        <div className="max-w-3xl text-center space-y-6 mb-8 sm:mb-12">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold drop-shadow-2xl leading-tight">
             ยินดีต้อนรับสู่
             <br />
             <span className="text-pink-400">ระบบแลกเปลี่ยนสินค้าออนไลน์</span>
           </h1>
-          <p className="text-lg sm:text-xl text-white/90 leading-relaxed">
+          <p className="text-base sm:text-xl text-white/90 leading-relaxed">
             เว็บไซต์ที่จะช่วยให้คุณสามารถแลกเปลี่ยนสินค้าได้อย่าง{" "}
             <span className="font-semibold text-white">
               สะดวก รวดเร็ว และปลอดภัย
@@ -50,7 +49,7 @@ export default function LandingPageClient() {
         </div>
 
         {/* แถบไอคอน (Marquee) แบบต่อเนื่อง */}
-        <div className="relative w-full h-32 overflow-hidden mb-10">
+        <div className="relative w-full h-24 sm:h-32 overflow-hidden mb-8 sm:mb-10">
           <motion.div
             className="flex w-[200%] h-full absolute"
             // เริ่มต้น x:0 และเลื่อนไป x:-50% เพื่อให้เกิดการเลื่อนต่อเนื่อง
@@ -63,11 +62,11 @@ export default function LandingPageClient() {
             }}
           >
             {/* ชุดที่ 1 */}
-            <div className="flex items-center gap-16 w-1/2 justify-evenly">
+            <div className="flex items-center gap-8 sm:gap-16 w-1/2 justify-evenly">
               <TechIcons />
             </div>
             {/* ชุดที่ 2 (ซ้ำต่อกัน) */}
-            <div className="flex items-center gap-16 w-1/2 justify-evenly">
+            <div className="flex items-center gap-8 sm:gap-16 w-1/2 justify-evenly">
               <TechIcons />
             </div>
           </motion.div>
@@ -75,8 +74,8 @@ export default function LandingPageClient() {
       </div>
 
       {/* บริการของเรา (Services Section) */}
-      <div className="bg-white/5 py-12 px-4 sm:px-6 lg:px-8 rounded-md shadow-md">
-        <h2 className="text-center text-2xl sm:text-3xl font-bold mb-8 drop-shadow-lg">
+      <div className="bg-white/5 py-8 sm:py-12 px-4 sm:px-6 lg:px-8 rounded-md shadow-md">
+        <h2 className="text-center text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 drop-shadow-lg">
           บริการของเรา
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
@@ -110,36 +109,6 @@ export default function LandingPageClient() {
             title="ปลอดภัย มั่นใจได้"
             description="ระบบรีวิวและยืนยันตัวตน ช่วยสร้างความเชื่อมั่นในการแลกเปลี่ยน"
           />
-        </div>
-      </div>
-
-      {/* ส่วน Feature Highlights */}
-      <div className="bg-white/10 rounded-t-3xl py-12 px-4 sm:px-6 lg:px-8 shadow-xl mt-8">
-        <h2 className="text-center text-2xl sm:text-3xl font-bold mb-8 drop-shadow-lg">
-          ฟีเจอร์เด็ดของเรา
-        </h2>
-        <div className="flex flex-col md:flex-row items-start justify-center gap-8 max-w-6xl mx-auto">
-          <div className="flex-1 p-6 bg-white/5 rounded-lg shadow-md space-y-2">
-            <h3 className="text-xl font-semibold">ระบบโพสต์สินค้า</h3>
-            <p className="text-sm text-white/90">
-              ให้คุณสร้าง แก้ไข หรือลบโพสต์ได้ทันที
-              อัปโหลดรูปสินค้าและกำหนดจุดนัดพบผ่านแผนที่ได้ง่าย ๆ
-            </p>
-          </div>
-          <div className="flex-1 p-6 bg-white/5 rounded-lg shadow-md space-y-2">
-            <h3 className="text-xl font-semibold">ระบบคอมเมนต์ & ถูกใจ</h3>
-            <p className="text-sm text-white/90">
-              แสดงความคิดเห็นต่อโพสต์ และกดถูกใจโพสต์
-              พร้อมทั้งดูจำนวนผู้กดถูกใจได้แบบเรียลไทม์
-            </p>
-          </div>
-          <div className="flex-1 p-6 bg-white/5 rounded-lg shadow-md space-y-2">
-            <h3 className="text-xl font-semibold">ระบบแชทส่วนตัว</h3>
-            <p className="text-sm text-white/90">
-              พูดคุยกับผู้ขายหรือผู้สนใจสินค้าในช่องทางส่วนตัวได้ทันที
-              ไม่ต้องออกจากระบบ
-            </p>
-          </div>
         </div>
       </div>
 
@@ -177,12 +146,7 @@ function TechIcons() {
       </IconWrap>
 
       <IconWrap label="TypeScript">
-        <Image
-          src="/icons/typescript-icon.png"
-          alt="TypeScript"
-          width={72}
-          height={72}
-        />
+        <Image src="/icons/typescript-icon.png" alt="TypeScript" width={72} height={72} />
       </IconWrap>
 
       <IconWrap label="Prisma">
@@ -224,7 +188,7 @@ function ServiceCard({ Icon, title, description }: ServiceCardProps) {
     <div className="flex flex-col items-center text-center space-y-3">
       {/* ขนาดและสีของ Heroicon ปรับได้ใน className */}
       <Icon className="w-16 h-16 text-white/90" />
-      <h3 className="text-lg font-semibold">{title}</h3>
+      <h3 className="text-base sm:text-lg font-semibold">{title}</h3>
       <p className="text-sm text-white/90">{description}</p>
     </div>
   );

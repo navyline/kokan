@@ -214,7 +214,7 @@ function IconWrap({ label, children }: IconWrapProps) {
  * แทนการส่ง path ของรูป ก็ส่งเป็นไอคอนคอมโพเนนต์แทน
  */
 interface ServiceCardProps {
-  Icon: (props: React.SVGProps<SVGSVGElement>) => JSX.Element;
+  Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   title: string;
   description: string;
 }
